@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#176b5b" />
+  <title>AI MedGuide | متابعة الأدوية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --forest: #176b5b;
+      --forest-dark: #0e4c42;
+      --forest-pale: #e7f4ef;
+      --sage: #83aa8d;
+      --cream: #f7f2e9;
+      --sand: #eee4d4;
+      --paper: #fffdfa;
+      --ink: #1d2d2a;
+      --muted: #6c7b77;
+      --line: #e6ddd0;
+      --gold: #d9922e;
+      --gold-pale: #fff4dc;
+      --danger: #bb5b4c;
+      --danger-pale: #fff0ed;
+      --success: #368260;
+      --shadow: 0 12px 35px rgba(43, 74, 65, .08);
+      --radius: 22px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--ink);
+      font-family: Cairo, Tahoma, sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+    }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(217, 146, 46, .48); outline-offset: 2px; }
+    .app-shell { min-height: 100vh; padding-bottom: 32px; }
+    .topbar {
+      background: linear-gradient(120deg, var(--forest-dark), var(--forest));
+      color: white;
+      min-height: 104px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 18px clamp(18px, 4vw, 68px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 5px 20px rgba(14, 76, 66, .18);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 215px; }
+    .logo { width: 45px; height: 45px; border-radius: 14px; display: grid; place-items: center; background: var(--gold); color: var(--forest-dark); font-size: 25px; font-weight: 800; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
+    .brand h1 { margin: 0; font-size: 19px; letter-spacing: -.3px; }
+    .brand span { display: block; font-size: 11px; opacity: .78; margin-top: 2px; }
+    .top-meta { display: flex; align-items: center; gap: 22px; }
+    .clock { border-right: 1px solid rgba(255,255,255,.22); padding-right: 22px; text-align: left; direction: ltr; }
+    .clock time { display: block; font-size: 22px; font-weight: 700; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+    .clock span, .hello span { font-size: 11px; color: rgba(255,255,255,.74); }
+    .hello { padding-left: 7px; }
+    .hello strong { display: block; font-size: 14px; }
+    .quick-add { width: 46px; height: 46px; border: 0; border-radius: 15px; background: var(--gold); color: var(--forest-dark); font-size: 27px; line-height: 1; font-weight: 600; }
+    .desktop-nav { display: flex; gap: 4px; justify-content: center; padding: 12px 20px 0; background: var(--cream); }
+    .nav-button { border: 0; background: transparent; color: var(--muted); border-radius: 13px; padding: 10px 15px; white-space: nowrap; font-size: 13px; transition: .18s; }
+    .nav-button:hover { background: #efe7d8; color: var(--forest); }
+    .nav-button.active { color: white; background: var(--forest); box-shadow: 0 5px 12px rgba(23,107,91,.18); }
+    main { width: min(1180px, calc(100% - 38px)); margin: 24px auto; }
+    .screen { display: none; animation: reveal .25s ease both; }
+    .screen.active { display: block; }
+    @keyframes reveal { from { opacity: .2; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+    .page-heading { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; gap: 20px; }
+    .page-heading h2 { margin: 0; font-size: 25px; color: var(--forest-dark); }
+    .page-heading p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .card-pad { padding: 22px; }
+    .section-label { margin: 0 0 14px; font-size: 16px; color: var(--forest-dark); }
+    .subtle { color: var(--muted); font-size: 12px; }
+    .grid { display: grid; gap: 18px; }
+    .home-grid { grid-template-columns: 1.05fr 1.4fr .9fr; align-items: stretch; }
+    .progress-card { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 245px; }
+    .circle { --progress: 75; width: 152px; height: 152px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--forest) calc(var(--progress) * 1%), #e7e6df 0); position: relative; }
+    .circle:before { content: ''; position: absolute; inset: 12px; border-radius: inherit; background: var(--paper); }
+    .circle > div { position: relative; text-align: center; }
+    .circle strong { display: block; font-size: 31px; color: var(--forest-dark); }
+    .circle span { font-size: 11px; color: var(--muted); }
+    .progress-card p { margin: 14px 0 0; color: var(--muted); font-size: 12px; }
+    .next-dose { display: flex; flex-direction: column; justify-content: space-between; min-height: 245px; background: linear-gradient(135deg, #fffdfa, #f7faf7); }
+    .dose-title { display: flex; gap: 12px; align-items: center; }
+    .pill-symbol { flex: 0 0 auto; width: 49px; height: 49px; display: grid; place-items: center; border-radius: 16px; background: var(--forest-pale); color: var(--forest); font-size: 22px; }
+    .dose-title h3 { margin: 0; font-size: 18px; color: var(--forest-dark); }
+    .dose-title p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+    .dose-time { margin: 22px 0; display: flex; align-items: center; gap: 8px; color: var(--forest); font-weight: 700; font-size: 18px; }
+    .btn { border: 0; border-radius: 13px; padding: 11px 16px; font-weight: 700; font-size: 13px; transition: transform .15s, box-shadow .15s, background .15s; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--forest); color: white; box-shadow: 0 5px 13px rgba(23,107,91,.18); }
+    .btn-primary:hover { background: var(--forest-dark); }
+    .btn-light { background: var(--forest-pale); color: var(--forest-dark); }
+    .btn-warn { background: var(--gold); color: #3a2b13; }
+    .btn-danger { background: var(--danger-pale); color: var(--danger); }
+    .btn-outline { background: white; border: 1px solid var(--line); color: var(--forest-dark); }
+    .btn-small { padding: 8px 12px; font-size: 12px; }
+    .alert-card { border-color: #efcf91; background: var(--gold-pale); min-height: 245px; display: flex; flex-direction: column; justify-content: space-between; }
+    .alert-icon { width: 40px; height: 40px; display: grid; place-items: center; background: #ffe4aa; border-radius: 13px; color: #84530c; font-size: 20px; }
+    .alert-card h3 { font-size: 15px; margin: 12px 0 6px; color: #744d0e; }
+    .alert-card p { font-size: 12px; margin: 0; color: #886b3d; line-height: 1.8; }
+    .disclaimer { margin-top: 18px; padding: 14px 17px; color: #536460; background: #eef5f1; border: 1px dashed #b6d1c6; border-radius: 16px; font-size: 12px; line-height: 1.8; }
+    .disclaimer strong { color: var(--forest-dark); }
+    .today-strip { margin-top: 20px; padding: 18px 22px; display: flex; align-items: center; gap: 18px; }
+    .today-strip h3 { margin: 0; font-size: 15px; color: var(--forest-dark); white-space: nowrap; }
+    .mini-doses { display: flex; gap: 9px; overflow-x: auto; flex: 1; }
+    .mini-dose { min-width: 145px; background: #fbf8f1; border-radius: 12px; padding: 8px 11px; font-size: 11px; border-right: 3px solid var(--gold); }
+    .mini-dose strong { display: block; color: var(--forest-dark); }
+    .mini-dose small { color: var(--muted); }
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .toolbar .search { min-width: 220px; flex: 1; position: relative; }
+    .toolbar input { width: 100%; padding: 10px 13px; border-radius: 12px; background: white; border: 1px solid var(--line); color: var(--ink); }
+    .med-list { margin-top: 18px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .med-card { padding: 18px; position: relative; overflow: hidden; }
+    .med-card:before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; background: var(--sage); }
+    .med-card .med-head { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+    .med-card h3 { font-size: 17px; margin: 0; color: var(--forest-dark); }
+    .med-card .dose { font-size: 12px; color: var(--muted); margin: 2px 0; }
+    .med-tag { display: inline-block; padding: 3px 9px; background: #f4f0e7; border-radius: 20px; font-size: 10px; color: #68716e; }
+    .med-meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-top: 15px; border-top: 1px solid var(--line); padding-top: 12px; }
+    .med-meta div { font-size: 10px; color: var(--muted); }
+    .med-meta strong { display: block; margin-top: 1px; color: var(--ink); font-size: 11px; }
+    .med-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .interaction-note { background: var(--gold-pale); border: 1px solid #f2dcac; border-radius: 15px; padding: 12px 14px; display: none; gap: 9px; align-items: flex-start; margin: 16px 0 0; font-size: 12px; color: #75551d; line-height: 1.7; }
+    .interaction-note.show { display: flex; }
+    .empty { color: var(--muted); text-align: center; padding: 45px 15px; grid-column: 1/-1; }
+    .scan-layout { grid-template-columns: .85fr 1.15fr; }
+    .upload-zone { min-height: 260px; display: grid; place-items: center; text-align: center; border: 2px dashed #b7cfc4; background: #f4faf7; border-radius: 18px; padding: 25px; transition: .2s; }
+    .upload-zone.drag { border-color: var(--forest); background: #eaf6f0; }
+    .upload-zone .large-icon { font-size: 47px; color: var(--forest); }
+    .upload-zone h3 { margin: 9px 0 4px; font-size: 16px; color: var(--forest-dark); }
+    .upload-zone p { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
+    .file-row { display: flex; align-items: center; gap: 9px; border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin-top: 15px; background: #fff; }
+    .file-row img { width: 44px; height: 44px; border-radius: 9px; object-fit: cover; background: var(--sand); }
+    .file-row b { display: block; font-size: 12px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .file-row span { display: block; font-size: 10px; color: var(--muted); }
+    .scan-results { min-height: 310px; }
+    .scan-intro { color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .extracted-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .extracted-item:last-child { border-bottom: 0; }
+    .extracted-item input { width: 19px; height: 19px; accent-color: var(--forest); }
+    .extracted-item div { flex: 1; }
+    .extracted-item b { display: block; font-size: 14px; color: var(--forest-dark); }
+    .extracted-item span { color: var(--muted); font-size: 11px; }
+    .confidence { font-size: 10px; background: var(--forest-pale); color: var(--forest); padding: 3px 7px; border-radius: 20px; }
+    .schedule-top { grid-template-columns: 1.15fr .85fr; }
+    .timeline { padding: 8px 0; }
+    .timeline-row { display: flex; gap: 16px; position: relative; padding: 12px 0; }
+    .timeline-row:before { content:''; width: 2px; height: 100%; background: #e3e4df; position: absolute; right: 68px; top: 28px; }
+    .timeline-row:last-child:before { display: none; }
+    .timeline-time { width: 55px; flex: none; font-weight: 700; color: var(--forest); font-size: 12px; padding-top: 8px; direction: ltr; text-align: left; }
+    .timeline-dot { z-index: 1; width: 18px; height: 18px; margin-top: 7px; flex: none; border-radius: 50%; background: var(--gold); border: 4px solid #fff; box-shadow: 0 0 0 1px #e6e5df; }
+    .timeline-row.taken .timeline-dot { background: var(--success); }
+    .timeline-row.missed .timeline-dot { background: var(--danger); }
+    .timeline-content { flex: 1; background: #fbfaf5; border: 1px solid #eee9df; border-radius: 14px; padding: 10px 12px; display: flex; align-items: center; gap: 9px; }
+    .timeline-content div { flex: 1; }
+    .timeline-content b { display: block; font-size: 13px; color: var(--forest-dark); }
+    .timeline-content span { font-size: 11px; color: var(--muted); }
+    .action-round { height: 33px; min-width: 33px; border: 0; border-radius: 10px; color: var(--forest); background: var(--forest-pale); font-weight: 800; }
+    .action-round.miss { color: var(--danger); background: var(--danger-pale); }
+    .voice-panel { background: linear-gradient(145deg, var(--forest-dark), #277a69); color: white; overflow: hidden; position: relative; }
+    .voice-panel:after { content:'◌ ◌ ◌'; letter-spacing: 13px; position: absolute; left: -30px; bottom: -27px; font-size: 90px; color: rgba(255,255,255,.05); }
+    .voice-panel h3 { margin: 0; font-size: 17px; }
+    .voice-panel p { margin: 7px 0 16px; font-size: 12px; color: rgba(255,255,255,.8); line-height: 1.8; }
+    .mic-button { width: 64px; height: 64px; border: 0; border-radius: 50%; color: #4d3211; background: var(--gold); font-size: 25px; box-shadow: 0 0 0 10px rgba(217,146,46,.17); position: relative; z-index: 1; }
+    .mic-button.listening { animation: pulse .8s infinite alternate; }
+    @keyframes pulse { to { box-shadow: 0 0 0 18px rgba(217,146,46,.08); transform: scale(1.03); } }
+    .voice-status { margin: 14px 0 0; min-height: 24px; font-size: 11px; color: rgba(255,255,255,.75); position: relative; z-index: 1; }
+    .chart-area { margin-top: 18px; }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; }
+    .segmented { display: inline-flex; gap: 3px; background: #f2ede3; border-radius: 10px; padding: 3px; }
+    .segmented button { border: 0; background: transparent; border-radius: 7px; padding: 5px 9px; color: var(--muted); font-size: 11px; }
+    .segmented button.active { color: var(--forest-dark); background: white; box-shadow: 0 1px 5px rgba(0,0,0,.08); }
+    .chart { height: 186px; margin-top: 16px; display: flex; gap: 10px; align-items: end; border-bottom: 1px solid var(--line); padding: 0 10px; }
+    .bar-set { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 7px; min-width: 25px; }
+    .bar { width: min(32px, 100%); background: linear-gradient(var(--sage), var(--forest)); border-radius: 8px 8px 2px 2px; min-height: 7px; transition: height .35s; }
+    .bar-set small { font-size: 10px; color: var(--muted); }
+    .adherence-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 18px; }
+    .stat { padding: 12px; border-radius: 14px; background: #fbfaf5; }
+    .stat span { display: block; color: var(--muted); font-size: 10px; }
+    .stat b { display: block; color: var(--forest-dark); margin-top: 3px; font-size: 17px; }
+    .stock-card { margin-top: 18px; display: flex; gap: 14px; align-items: center; padding: 15px 18px; background: #fffaf0; border-color: #f3e1b9; }
+    .stock-card i { font-style: normal; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: #ffedc7; }
+    .stock-card div { flex: 1; }
+    .stock-card b { display: block; font-size: 13px; color: #765319; }
+    .stock-card span { font-size: 11px; color: #856e49; }
+    .plans { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
+    .plan { padding: 22px; position: relative; }
+    .plan.featured { background: var(--forest-dark); color: white; border-color: var(--forest-dark); transform: translateY(-6px); }
+    .plan h3 { margin: 0; font-size: 18px; color: var(--forest-dark); }
+    .plan.featured h3 { color: white; }
+    .plan > p { color: var(--muted); font-size: 11px; min-height: 37px; }
+    .plan.featured > p, .plan.featured li { color: rgba(255,255,255,.78); }
+    .price { margin: 12px 0; font-weight: 800; font-size: 26px; color: var(--forest-dark); }
+    .price small { font-size: 11px; font-weight: 400; }
+    .plan.featured .price { color: var(--gold); }
+    .plan ul { padding: 0 17px 0 0; margin: 14px 0 20px; line-height: 2.1; color: #596965; font-size: 11px; }
+    .popular { position: absolute; top: -12px; left: 18px; padding: 4px 10px; border-radius: 13px; background: var(--gold); color: #3e2a12; font-size: 10px; font-weight: 800; }
+    .doctor-grid { grid-template-columns: repeat(3, 1fr); margin-top: 20px; }
+    .doctor-card { padding: 18px; }
+    .doctor-head { display: flex; align-items: center; gap: 11px; }
+    .doctor-avatar { width: 44px; height: 44px; border-radius: 15px; background: #e2ece6; display: grid; place-items: center; font-size: 21px; }
+    .doctor-card h3 { font-size: 14px; margin: 0; color: var(--forest-dark); }
+    .doctor-card p { margin: 2px 0; color: var(--muted); font-size: 11px; }
+    .doctor-info { display: flex; gap: 8px; margin: 12px 0; font-size: 10px; color: var(--muted); }
+    .doctor-info span { background: #f4f1e9; padding: 4px 7px; border-radius: 7px; }
+    .settings-layout { grid-template-columns: .8fr 1.2fr; }
+    .settings-menu { padding: 9px; height: max-content; }
+    .settings-tab { width: 100%; display: flex; align-items: center; gap: 9px; border: 0; border-radius: 12px; padding: 11px; background: transparent; text-align: right; color: var(--muted); font-size: 13px; }
+    .settings-tab.active { color: var(--forest-dark); font-weight: 700; background: var(--forest-pale); }
+    .settings-panel { display: none; }
+    .settings-panel.active { display: block; }
+    .profile-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+    .info-chip { background: #f8f5ed; border-radius: 12px; padding: 12px; }
+    .info-chip span { display: block; font-size: 10px; color: var(--muted); }
+    .info-chip b { display: block; font-size: 12px; margin-top: 2px; }
+    .setting-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; border-top: 1px solid var(--line); padding: 14px 0; }
+    .setting-row:first-child { border-top: 0; }
+    .setting-row b { display: block; font-size: 13px; color: var(--forest-dark); }
+    .setting-row span { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .switch { width: 43px; height: 24px; flex: 0 0 auto; border: 0; padding: 3px; background: #d9ddd9; border-radius: 20px; }
+    .switch:after { content:''; display: block; width: 18px; height: 18px; background: white; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+    .switch.on { background: var(--forest); }
+    .switch.on:after { transform: translateX(-19px); }
+    .bottom-nav { display: none; }
+    .modal-wrap { position: fixed; z-index: 50; inset: 0; background: rgba(16,42,36,.46); display: none; align-items: center; justify-content: center; padding: 18px; backdrop-filter: blur(3px); }
+    .modal-wrap.show { display: flex; }
+    .modal { width: min(580px, 100%); max-height: min(720px, 92vh); overflow: auto; background: var(--paper); border-radius: 24px; box-shadow: 0 20px 65px rgba(0,0,0,.22); padding: 23px; animation: modal-in .22s ease both; }
+    @keyframes modal-in { from { opacity: 0; transform: translateY(13px) scale(.98); } }
+    .modal h2 { margin: 0; color: var(--forest-dark); font-size: 20px; }
+    .modal > p { margin: 4px 0 18px; color: var(--muted); font-size: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { margin-bottom: 12px; }
+    .field.full { grid-column: 1 / -1; }
+    .field label { display: block; font-size: 11px; margin-bottom: 5px; color: #4e5d59; font-weight: 700; }
+    .field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; background: #fffefa; color: var(--ink); }
+    .field textarea { min-height: 70px; resize: vertical; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-start; margin-top: 16px; }
+    .modal-actions .btn { min-width: 112px; }
+    .close-modal { float: left; border: 0; background: #f2eee6; color: var(--muted); width: 32px; height: 32px; border-radius: 10px; font-size: 18px; }
+    .reason-options { display: grid; gap: 8px; }
+    .reason-option { text-align: right; background: #fbfaf5; color: var(--ink); border: 1px solid var(--line); border-radius: 11px; padding: 11px; }
+    .reason-option.selected { background: var(--forest-pale); border-color: #9bc7b7; color: var(--forest-dark); }
+    .toast { position: fixed; z-index: 90; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(120px); background: #163d35; color: white; padding: 11px 18px; border-radius: 14px; box-shadow: 0 10px 26px rgba(0,0,0,.2); font-size: 12px; transition: .28s; text-align: center; max-width: min(400px, calc(100% - 30px)); }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .dose-reminder { position: fixed; z-index: 80; top: 20px; left: 50%; width: min(430px, calc(100% - 28px)); transform: translateX(-50%) translateY(-140%); background: var(--paper); border: 1px solid #c7dfd4; border-radius: 20px; padding: 14px; box-shadow: 0 16px 45px rgba(13,74,64,.25); display: flex; align-items: center; gap: 11px; transition: transform .35s cubic-bezier(.2,.8,.3,1.15); }
+    .dose-reminder.show { transform: translateX(-50%) translateY(0); }
+    .dose-reminder-icon { width: 43px; height: 43px; flex: none; display: grid; place-items: center; border-radius: 14px; background: var(--gold-pale); color: #905c10; font-size: 21px; animation: reminder-pulse 1s infinite alternate; }
+    @keyframes reminder-pulse { to { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(217,146,46,.14); } }
+    .dose-reminder-copy { flex: 1; min-width: 0; }.dose-reminder-copy b { display: block; color: var(--forest-dark); font-size: 13px; }.dose-reminder-copy span { display: block; color: var(--muted); font-size: 11px; margin-top: 1px; }.dose-reminder-actions { display: flex; gap: 5px; }.dose-reminder-actions .btn { padding: 8px 9px; font-size: 10px; }
+    .voice-picker { display: flex; flex-direction: column; gap: 8px; width: min(270px, 100%); }.voice-presets { display: flex; gap: 5px; flex-wrap: wrap; }.voice-presets button { background: #f5f1e8; border: 1px solid var(--line); color: var(--muted); border-radius: 9px; padding: 6px 8px; font-family: inherit; font-size: 10px; cursor: pointer; }.voice-presets button.active { background: var(--forest-pale); border-color: #98c6b5; color: var(--forest-dark); font-weight: 700; }.voice-picker select { width: 100%; border: 1px solid var(--line); border-radius: 9px; background: #fffefa; color: var(--ink); font-family: inherit; font-size: 10px; padding: 6px; }
+    .print-report { display: none; }
+    @media (max-width: 900px) {
+      .topbar { min-height: 76px; padding: 12px 18px; }
+      .top-meta .hello, .clock span { display: none; }
+      .clock { padding-right: 14px; }
+      .clock time { font-size: 16px; }
+      .desktop-nav { overflow-x: auto; justify-content: start; padding-right: 18px; }
+      .home-grid, .scan-layout, .schedule-top, .settings-layout { grid-template-columns: 1fr; }
+      .plans, .doctor-grid { grid-template-columns: repeat(3, minmax(220px, 1fr)); overflow-x: auto; padding: 11px 2px; }
+      .plan, .doctor-card { min-width: 220px; }
+      .plan.featured { transform: none; }
+    }
+    @media (max-width: 620px) {
+      body { font-size: 14px; }
+      .app-shell { padding-bottom: 80px; }
+      .topbar { position: relative; gap: 9px; }
+      .brand { min-width: 0; }
+      .logo { width: 37px; height: 37px; border-radius: 12px; font-size: 21px; }
+      .brand h1 { font-size: 15px; }
+      .brand span { display: none; }
+      .top-meta { gap: 7px; }
+      .quick-add { width: 37px; height: 37px; border-radius: 12px; font-size: 23px; }
+      .desktop-nav { display: none; }
+      main { width: min(100% - 26px, 560px); margin: 18px auto; }
+      .page-heading { margin-bottom: 13px; }
+      .page-heading h2 { font-size: 21px; }
+      .page-heading p { font-size: 11px; }
+      .home-grid { gap: 12px; }
+      .card-pad { padding: 17px; }
+      .progress-card, .next-dose, .alert-card { min-height: auto; }
+      .progress-card { padding: 19px; display: flex; flex-direction: row; gap: 15px; text-align: right; }
+      .circle { width: 105px; height: 105px; flex: none; }
+      .circle:before { inset: 8px; }
+      .circle strong { font-size: 22px; }
+      .circle > div { text-align: center; }
+      .progress-card p { margin: 0; }
+      .today-strip { padding: 14px; align-items: flex-start; flex-direction: column; gap: 9px; }
+      .med-list { grid-template-columns: 1fr; }
+      .med-meta { grid-template-columns: repeat(3, 1fr); }
+      .toolbar { width: 100%; }
+      .toolbar .search { min-width: 0; order: 2; flex-basis: 100%; }
+      .bottom-nav { display: flex; position: fixed; z-index: 30; bottom: 0; right: 0; left: 0; height: 69px; background: rgba(255,253,250,.97); border-top: 1px solid var(--line); box-shadow: 0 -8px 22px rgba(0,0,0,.05); padding: 5px 2px env(safe-area-inset-bottom); justify-content: space-around; }
+      .bottom-nav button { width: 16.66%; border: 0; color: #77837f; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border-radius: 10px; font-size: 9px; line-height: 1.3; }
+      .bottom-nav i { font-style: normal; font-size: 18px; }
+      .bottom-nav button.active { color: var(--forest-dark); font-weight: 800; background: #edf6f1; }
+      .timeline-time { width: 45px; }
+      .timeline-row:before { right: 57px; }
+      .timeline-content { align-items: flex-start; flex-wrap: wrap; }
+      .timeline-content .action-round { margin-right: auto; }
+      .settings-layout { gap: 12px; }
+      .settings-menu { display: flex; overflow-x: auto; padding: 5px; }
+      .settings-tab { width: auto; flex: 0 0 auto; white-space: nowrap; }
+      .settings-tab span { display: none; }
+      .modal { border-radius: 20px; padding: 19px; }
+      .form-grid, .profile-info { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+    @media print {
+      body * { visibility: hidden; }
+      .print-report, .print-report * { visibility: visible; }
+      .print-report { display: block; position: absolute; inset: 0; padding: 30px; font-family: Cairo, sans-serif; }
+      .print-report h1 { color: #176b5b; }
+      .print-report table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      .print-report th, .print-report td { padding: 10px; border: 1px solid #ddd; text-align: right; }
+      .print-report th { background: #e7f4ef; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">✚</div>
+        <div><h1>AI MedGuide</h1><span>متابعة الأدوية والصحة اليومية</span></div>
+      </div>
+      <div class="top-meta">
+        <div class="clock"><time id="liveClock">--:--:--</time><span id="liveDate">—</span></div>
+        <div class="hello"><strong id="greetingName">أهلًا، محمود</strong><span>نتمنى لك يومًا هادئًا</span></div>
+        <button class="quick-add" type="button" aria-label="إضافة دواء" data-open-med>＋</button>
+      </div>
+    </header>
+
+    <nav class="desktop-nav" aria-label="الأقسام الرئيسية">
+      <button class="nav-button active" data-screen="home">الرئيسية</button>
+      <button class="nav-button" data-screen="medications">أدويتي</button>
+      <button class="nav-button" data-screen="scan">مسح الروشتة</button>
+      <button class="nav-button" data-screen="schedule">الجدول والالتزام</button>
+      <button class="nav-button" data-screen="doctors">استشارة طبيب</button>
+      <button class="nav-button" data-screen="settings">الإعدادات</button>
+    </nav>
+
+    <main>
+      <section class="screen active" id="home">
+        <div class="page-heading"><div><h2 id="homeGreeting">صباح الخير يا محمود</h2><p>هذه لمحة سريعة على التزامك الدوائي اليوم.</p></div><button class="btn btn-light btn-small" data-screen-go="schedule">عرض جدول اليوم</button></div>
+        <div class="grid home-grid">
+          <article class="card progress-card">
+            <div class="circle" id="homeProgress"><div><strong id="homePercent">75%</strong><span>التزام اليوم</span></div></div>
+            <p id="progressNote">3 من 4 جرعات تم تسجيلها</p>
+          </article>
+          <article class="card card-pad next-dose">
+            <div><div class="dose-title"><div class="pill-symbol">◒</div><div><h3 id="nextMedicine">أملوديبين</h3><p id="nextDetail">5 مجم · قرص واحد</p></div></div><div class="dose-time">◷ <span id="nextTime">10:00 م</span></div></div>
+            <button class="btn btn-primary" id="takeNext">✓ أخدت الدواء</button>
+          </article>
+          <article class="card card-pad alert-card"><div><div class="alert-icon">!</div><h3 id="homeAlertTitle">ابدأ بإضافة أدويتك</h3><p id="homeAlertText">أضف دواءك الأول وحدد موعده لتبدأ التذكيرات والمتابعة.</p></div><button class="btn btn-outline btn-small" id="homeAlertAction" data-open-med>إضافة دواء</button></article>
+        </div>
+        <div class="card today-strip"><h3>جرعات اليوم</h3><div class="mini-doses" id="homeMiniDoses"></div></div>
+        <div class="disclaimer"><strong>تنويه طبي:</strong> AI MedGuide مساعد لتذكيرك بأدويتك ومتابعة التزامك فقط، وليس بديلًا عن الطبيب أو المختص. راجع الطبيب قبل تغيير أي دواء أو جرعة.</div>
+      </section>
+
+      <section class="screen" id="medications">
+        <div class="page-heading"><div><h2>أدويتي</h2><p>نظّم أدويتك ومواعيدك، وعدّلها عند صدور وصفة جديدة.</p></div><button class="btn btn-primary" data-open-med>＋ إضافة دواء</button></div>
+        <div class="toolbar"><div class="search"><input id="medSearch" type="search" placeholder="ابحث باسم الدواء…" aria-label="البحث عن دواء" /></div><button class="btn btn-outline btn-small" id="showAllMeds">كل الأدوية</button></div>
+        <div id="interactionNote" class="interaction-note"><span>⚠</span><div><strong>تنبيه للمراجعة</strong><br />قد يحتاج الجمع بين الأدوية المسجلة إلى مراجعة صيدلي أو طبيب. هذا تنبيه تنظيمي فقط وليس تشخيصًا أو حكمًا طبيًا.</div></div>
+        <div class="med-list" id="medList"></div>
+        <div class="disclaimer"><strong>سلامتك أولًا:</strong> لا توقف أو تضف أو تغيّر الجرعة بالاعتماد على هذا الموقع. اسأل الطبيب أو الصيدلي في أي تعارض أو عرض جانبي.</div>
+      </section>
+
+      <section class="screen" id="scan">
+        <div class="page-heading"><div><h2>مسح الروشتة</h2><p>ارفع صورة واضحة، ثم راجع النتائج بنفسك قبل أن نضيف أي دواء.</p></div></div>
+        <div class="grid scan-layout">
+          <article class="card card-pad">
+            <div class="upload-zone" id="uploadZone"><div><div class="large-icon">▧</div><h3>ارفع صورة الروشتة</h3><p>JPG أو PNG — أو التقط صورة مباشرة بالكاميرا.</p><div><button class="btn btn-primary btn-small" id="chooseFile" type="button">اختيار صورة</button><button class="btn btn-light btn-small" id="takePhoto" type="button">فتح الكاميرا</button></div><input id="rxInput" type="file" accept="image/*" hidden /><input id="cameraInput" type="file" accept="image/*" capture="environment" hidden /></div></div>
+            <div id="filePreview"></div>
+          </article>
+          <article class="card card-pad scan-results" id="scanResults"><h3 class="section-label">النتائج المستخرجة</h3><p class="scan-intro">سيظهر هنا اقتراح للأدوية والجرعات بعد رفع صورة. هذه واجهة تجريبية: يتم إظهار النتائج كمسودة قابلة للمراجعة، ولا تُضاف إلى أدويتك إلا بعد موافقتك.</p></article>
+        </div>
+        <div class="disclaimer"><strong>تنويه:</strong> استخراج النص من الروشتة قد يخطئ، خصوصًا مع الخط اليدوي. طابق الاسم والجرعة مع الوصفة الأصلية والطبيب أو الصيدلي قبل الحفظ.</div>
+      </section>
+
+      <section class="screen" id="schedule">
+        <div class="page-heading"><div><h2>الجدول والالتزام</h2><p>سجل جرعاتك، وتابع النمط الأسبوعي أو الشهري.</p></div><button class="btn btn-outline" id="exportReport">⇩ تصدير تقرير الالتزام</button></div>
+        <div class="grid schedule-top">
+          <article class="card card-pad"><h3 class="section-label">جدول اليوم</h3><div class="timeline" id="timeline"></div></article>
+          <article class="card card-pad voice-panel"><h3>مساعد الجرعات الصوتي</h3><p>اضغط الميكروفون ثم قل «خدت الدوا». سيطلب منك التأكيد إن لم يكن الأمر واضحًا.</p><button class="mic-button" id="voiceButton" type="button" aria-label="تسجيل أمر صوتي">♩</button><div class="voice-status" id="voiceStatus">التنبيه الصوتي جاهز عند وقت الجرعة.</div></article>
+        </div>
+        <article class="card card-pad chart-area"><div class="chart-header"><div><h3 class="section-label" style="margin-bottom:2px">اتجاه الالتزام</h3><span class="subtle">نسبة الجرعات المسجلة في موعدها</span></div><div class="segmented"><button class="active" data-chart="week">أسبوعي</button><button data-chart="month">شهري</button></div></div><div class="chart" id="adherenceChart"></div><div class="adherence-stats"><div class="stat"><span>متوسط الالتزام</span><b id="avgAdherence">82%</b></div><div class="stat"><span>جرعات فائتة</span><b id="missedTotal">2</b></div><div class="stat"><span>الأيام المكتملة</span><b id="completedDays">5 / 7</b></div></div></article>
+        <article class="card stock-card" id="stockCard"><i>◫</i><div><b id="stockTitle">الدواء أوشك على النفاد</b><span id="stockDetail"></span></div><button class="btn btn-warn btn-small" data-open-med>تعديل المخزون</button></article>
+        <div class="disclaimer"><strong>تذكير:</strong> تنبيهات الصوت تعمل أثناء فتح الصفحة وبحسب صلاحيات الجهاز. لا تعتمد على الموقع وحده في الحالات الحساسة أو العاجلة.</div>
+      </section>
+
+      <section class="screen" id="doctors">
+        <div class="page-heading"><div><h2>استشارة طبيب</h2><p>خدمة مدفوعة؛ اختر الخطة المناسبة قبل الحجز.</p></div></div>
+        <div class="grid plans">
+          <article class="card plan"><h3>الأساسية</h3><p>متابعة منظمة للاحتياجات اليومية.</p><div class="price">49 <small>جنيه / شهريًا</small></div><ul><li>تنظيم وتذكير الأدوية</li><li>تقرير التزام شهري</li><li>دعم داخل التطبيق</li></ul><button class="btn btn-light" data-plan="الأساسية">اختيار الخطة</button></article>
+          <article class="card plan featured"><span class="popular">الأكثر اختيارًا</span><h3>الرعاية</h3><p>لمن يريد استشارة ومتابعة أوضح.</p><div class="price">149 <small>جنيه / شهريًا</small></div><ul><li>كل مزايا الأساسية</li><li>استشارة شات مع طبيب</li><li>مشاركة تقرير الالتزام</li></ul><button class="btn btn-warn" data-plan="الرعاية">اختيار الخطة</button></article>
+          <article class="card plan"><h3>الرعاية السنوية</h3><p>أفضل قيمة للمتابعة طويلة المدى.</p><div class="price">1,499 <small>جنيه / سنويًا</small></div><ul><li>كل مزايا الرعاية</li><li>أولوية في الحجز</li><li>توفير سنوي واضح</li></ul><button class="btn btn-light" data-plan="الرعاية السنوية">اختيار الخطة</button></article>
+        </div>
+        <h3 class="section-label" style="margin-top:25px">الأطباء المتاحون</h3><div class="grid doctor-grid" id="doctorGrid"></div>
+        <div class="disclaimer"><strong>تنبيه طارئ:</strong> الاستشارة عن بُعد لا تغني عن الكشف الفعلي في الحالات الطارئة. إذا كان هناك خطر مباشر أو أعراض شديدة، اتصل بالطوارئ أو اذهب لأقرب مستشفى.</div>
+      </section>
+
+      <section class="screen" id="settings">
+        <div class="page-heading"><div><h2>الإعدادات</h2><p>أدر ملفك الصحي، المتابع، وطريقة التذكير.</p></div></div>
+        <div class="grid settings-layout"><aside class="card settings-menu"><button class="settings-tab active" data-setting="health">▣ <span>الملف الصحي</span></button><button class="settings-tab" data-setting="caregiver">♙ <span>وضع المتابع</span></button><button class="settings-tab" data-setting="notifications">♩ <span>التنبيهات</span></button><button class="settings-tab" data-setting="account">◎ <span>الحساب</span></button></aside>
+          <article class="card card-pad">
+            <div class="settings-panel active" id="health"><h3 class="section-label">ملفك الصحي</h3><p class="subtle">المعلومات ظاهرة لك فقط، ولا تُشارك مع الطبيب إلا عند منح موافقتك أثناء الحجز.</p><div class="profile-info"><div class="info-chip"><span>الأمراض المزمنة</span><b id="healthChronic">سكري من النوع الثاني، ضغط</b></div><div class="info-chip"><span>الحساسية</span><b id="healthAllergies">لا توجد حساسية مسجلة</b></div><div class="info-chip"><span>عمليات سابقة</span><b id="healthSurgeries">غير مسجل</b></div><div class="info-chip"><span>فصيلة الدم</span><b id="healthBlood">غير مسجل</b></div></div><button class="btn btn-outline btn-small" id="editHealth">تعديل الملف الصحي</button></div>
+            <div class="settings-panel" id="caregiver"><h3 class="section-label">وضع المتابع</h3><p class="subtle">المتابع يرى حالة الالتزام والتنبيهات للجرعات الفائتة فقط، من دون صلاحية لتعديل الأدوية.</p><div class="setting-row"><div><b id="caregiverName">لا يوجد متابع مضاف</b><span id="caregiverDetail">أرسل دعوة إلى فرد من العائلة لتبدأ المتابعة.</span></div><button class="btn btn-primary btn-small" id="inviteCaregiver">دعوة متابع</button></div><div class="disclaimer" style="margin-top:14px">يمكنك إلغاء الدعوة أو إزالة المتابع في أي وقت. لا تشارك أي بيانات صحية أكثر مما يحتاجه المتابع.</div></div>
+            <div class="settings-panel" id="notifications"><h3 class="section-label">تفضيلات التنبيهات</h3><div class="setting-row"><div><b>تنبيه صوتي</b><span>يذكر اسم الدواء وجرعته عند موعده.</span></div><button class="switch on" data-switch="sound" aria-label="تفعيل الصوت"></button></div><div class="setting-row"><div><b>إشعارات المتصفح</b><span>تحتاج إلى إذن من الجهاز والمتصفح.</span></div><button class="switch on" data-switch="notification" aria-label="تفعيل الإشعارات"></button></div><div class="setting-row"><div><b>التذكير عند الفوات</b><span>إعادة التنبيه بعد الجرعة الفائتة.</span></div><button class="switch on" data-switch="missed" aria-label="تفعيل تذكير الفوات"></button></div><button class="btn btn-outline btn-small" id="testVoice">تجربة تنبيه صوتي</button></div>
+            <div class="settings-panel" id="account"><h3 class="section-label">إعدادات الحساب</h3><div class="setting-row"><div><b>الاسم</b><span>محمود أحمد</span></div><button class="btn btn-light btn-small">تعديل</button></div><div class="setting-row"><div><b>رقم الهاتف</b><span>010••••••••</span></div><button class="btn btn-light btn-small">تعديل</button></div><div class="setting-row"><div><b>اللغة</b><span>العربية</span></div><button class="btn btn-light btn-small">تغيير</button></div><button class="btn btn-danger btn-small" style="margin-top:15px">تسجيل الخروج</button></div>
+          </article>
+        </div>
+        <div class="disclaimer"><strong>خصوصيتك:</strong> احفظ بياناتك الصحية بعناية، ولا تمنح الوصول إلا للأشخاص والأطباء الذين تثق بهم.</div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="تنقل الهاتف"><button class="active" data-screen="home"><i>⌂</i>الرئيسية</button><button data-screen="medications"><i>◒</i>أدويتي</button><button data-screen="scan"><i>▧</i>مسح</button><button data-screen="schedule"><i>◷</i>الجدول</button><button data-screen="doctors"><i>♙</i>طبيب</button><button data-screen="settings"><i>⚙</i>إعدادات</button></nav>
+  </div>
+
+  <div class="modal-wrap" id="medModal" aria-hidden="true"><div class="modal"><button class="close-modal" data-close="medModal" aria-label="إغلاق">×</button><h2 id="medModalTitle">إضافة دواء</h2><p>أدخل المعلومات كما هي في الوصفة؛ لا تغيّر الجرعة من خلال التطبيق.</p><form id="medForm"><input type="hidden" id="medId" /><div class="form-grid"><div class="field"><label for="medName">اسم الدواء *</label><input id="medName" required placeholder="مثال: أملوديبين" /></div><div class="field"><label for="medDose">الجرعة *</label><input id="medDose" required placeholder="مثال: 5 مجم" /></div><div class="field"><label for="medFrequency">عدد المرات يوميًا</label><select id="medFrequency"><option value="مرة يوميًا">مرة يوميًا</option><option value="مرتين يوميًا">مرتين يوميًا</option><option value="3 مرات يوميًا">3 مرات يوميًا</option><option value="عند اللزوم">عند اللزوم</option></select></div><div class="field"><label for="medTime">الموعد</label><input id="medTime" type="time" value="08:00" /></div><div class="field"><label for="medDuration">مدة العلاج</label><input id="medDuration" placeholder="مثال: 30 يومًا" value="30 يومًا" /></div><div class="field"><label for="medRemaining">الجرعات المتبقية</label><input id="medRemaining" type="number" min="0" value="30" /></div><div class="field full"><label for="medNotes">ملاحظات</label><textarea id="medNotes" placeholder="مثال: بعد الإفطار"></textarea></div></div><div id="formInteraction" class="interaction-note" style="margin-top:3px"></div><div class="modal-actions"><button class="btn btn-primary" type="submit">حفظ الدواء</button><button class="btn btn-outline" type="button" data-close="medModal">إلغاء</button></div></form></div></div>
+  <div class="modal-wrap" id="missModal" aria-hidden="true"><div class="modal"><button class="close-modal" data-close="missModal" aria-label="إغلاق">×</button><h2>تسجيل جرعة فائتة</h2><p id="missTitle">اختر السبب حتى يساعدك التقرير على مناقشة الأمر مع طبيبك.</p><div class="reason-options" id="reasonOptions"><button class="reason-option">نسيان</button><button class="reason-option">أعراض جانبية</button><button class="reason-option">خلص الدواء</button><button class="reason-option">غير ذلك</button></div><div class="modal-actions"><button class="btn btn-primary" id="confirmMiss">تسجيل الفوات</button><button class="btn btn-outline" data-close="missModal">إلغاء</button></div></div></div>
+  <div class="modal-wrap" id="careModal" aria-hidden="true"><div class="modal"><button class="close-modal" data-close="careModal" aria-label="إغلاق">×</button><h2>دعوة متابع</h2><p>سيتمكن المتابع من رؤية الالتزام والتنبيه عند الفوات فقط، من دون تعديل بياناتك.</p><form id="careForm"><div class="field"><label for="careName">اسم المتابع</label><input id="careName" required placeholder="مثال: سارة أحمد" /></div><div class="field"><label for="careContact">رقم الهاتف أو البريد</label><input id="careContact" required placeholder="example@email.com" /></div><div class="modal-actions"><button class="btn btn-primary">إرسال الدعوة</button><button class="btn btn-outline" type="button" data-close="careModal">إلغاء</button></div></form></div></div>
+  <div class="modal-wrap" id="bookingModal" aria-hidden="true"><div class="modal"><button class="close-modal" data-close="bookingModal" aria-label="إغلاق">×</button><h2>حجز استشارة</h2><p id="bookingSub">اختر موعدًا مناسبًا. لا يتم الدفع أو الحجز الفعلي في هذا النموذج التجريبي.</p><form id="bookingForm"><div class="form-grid"><div class="field"><label for="bookDate">التاريخ</label><input id="bookDate" type="date" required /></div><div class="field"><label for="bookTime">الوقت</label><select id="bookTime"><option>06:00 م</option><option>07:00 م</option><option>08:00 م</option></select></div><div class="field full"><label><input id="shareData" type="checkbox" checked /> أوافق على مشاركة تقرير الالتزام، الملف الصحي، وقراءات السكر/الضغط مع الطبيب.</label></div></div><div class="disclaimer" style="margin-top:3px">الاستشارة عن بُعد لا تغني عن الكشف الفعلي للحالات الطارئة.</div><div class="modal-actions"><button class="btn btn-primary">تأكيد طلب الحجز</button><button class="btn btn-outline" type="button" data-close="bookingModal">إلغاء</button></div></form></div></div>
+  <aside class="dose-reminder" id="doseReminder" aria-live="assertive" aria-label="تذكير بموعد الدواء"><div class="dose-reminder-icon">◒</div><div class="dose-reminder-copy"><b id="reminderTitle">حان موعد الدواء</b><span id="reminderDetail"></span></div><div class="dose-reminder-actions"><button class="btn btn-primary" id="reminderTaken">أخذته</button><button class="btn btn-light" id="reminderSnooze">بعد 10 د</button></div></aside>
+  <div id="toast" class="toast" role="status"></div>
+  <div class="print-report" id="printReport"></div>
+
+  <script>
+    // تنقل بيانات الحساب مرة واحدة من صفحة التسجيل عند فتح الملفات محليًا في Firefox.
+    try {
+      const incomingProfile = new URLSearchParams(location.hash.slice(1)).get('profile');
+      if (incomingProfile) {
+        const profile = JSON.parse(decodeURIComponent(escape(atob(incomingProfile))));
+        localStorage.setItem('aiMedGuideProfile', JSON.stringify(profile));
+        localStorage.setItem('aiMedGuideSession', 'true');
+        try { history.replaceState(null, document.title, location.pathname); } catch (_) { location.hash = ''; }
+      }
+    } catch (_) { /* يبقى مسار تسجيل الدخول العادي متاحًا إذا كان الرابط غير صالح */ }
+    // لا تُعرض لوحة المتابعة قبل إنشاء حساب أو تسجيل دخول محلي في النسخة التجريبية.
+    if (!localStorage.getItem('aiMedGuideSession')) {
+      location.replace('ai-medguide-auth.html');
+    }
+    const state = {
+      medicines: [],
+      missedTarget: null,
+      missedReason: '',
+      chartMode: 'week',
+      selectedPlan: '',
+      selectedDoctor: '',
+      prescriptionImage: null
+    };
+
+    const $ = (selector, source = document) => source.querySelector(selector);
+    const $$ = (selector, source = document) => [...source.querySelectorAll(selector)];
+    const medicineStorageKey = 'aiMedGuideMedicines';
+    const readSavedMedicines = () => { try { const list = JSON.parse(localStorage.getItem(medicineStorageKey) || '[]'); return Array.isArray(list) ? list : []; } catch (_) { return []; } };
+    const saveMedicines = () => localStorage.setItem(medicineStorageKey, JSON.stringify(state.medicines));
+    const formatTime = raw => {
+      const [h, m] = raw.split(':').map(Number);
+      const suffix = h >= 12 ? 'م' : 'ص';
+      const hour = h % 12 || 12;
+      return `${hour}:${String(m).padStart(2, '0')} ${suffix}`;
+    };
+    const showToast = message => {
+      const el = $('#toast'); el.textContent = message; el.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => el.classList.remove('show'), 3300);
+    };
+    const openModal = id => { const el = $('#' + id); el.classList.add('show'); el.setAttribute('aria-hidden', 'false'); };
+    const closeModal = id => { const el = $('#' + id); el.classList.remove('show'); el.setAttribute('aria-hidden', 'true'); };
+
+    function updateClock() {
+      const now = new Date();
+      $('#liveClock').textContent = now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      $('#liveDate').textContent = now.toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long' });
+    }
+    updateClock(); setInterval(updateClock, 1000);
+
+    function setScreen(name) {
+      $$('.screen').forEach(el => el.classList.toggle('active', el.id === name));
+      $$('[data-screen]').forEach(el => el.classList.toggle('active', el.dataset.screen === name));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    $$('[data-screen]').forEach(button => button.addEventListener('click', () => setScreen(button.dataset.screen)));
+    $$('[data-screen-go]').forEach(button => button.addEventListener('click', () => setScreen(button.dataset.screenGo)));
+
+    function progress() {
+      const total = state.medicines.length;
+      const taken = state.medicines.filter(m => m.status === 'taken').length;
+      return { total, taken, percent: total ? Math.round((taken / total) * 100) : 0 };
+    }
+    function renderHome() {
+      const { total, taken, percent } = progress();
+      $('#homeProgress').style.setProperty('--progress', percent);
+      $('#homePercent').textContent = percent + '%';
+      $('#progressNote').textContent = `${taken} من ${total} جرعات تم تسجيلها`;
+      $('#homeAlertTitle').textContent = total ? 'تنبيه مهم' : 'ابدأ بإضافة أدويتك';
+      $('#homeAlertText').textContent = total ? 'تابع المواعيد يوميًا، وفعّل المتابع العائلي إن احتجت مساعدة في الالتزام.' : 'أضف دواءك الأول وحدد موعده لتبدأ التذكيرات والمتابعة.';
+      const next = [...state.medicines].sort((a,b) => a.time.localeCompare(b.time)).find(m => m.status === 'pending') || state.medicines[0];
+      $('#nextMedicine').textContent = next ? next.name : 'لا توجد جرعات';
+      $('#nextDetail').textContent = next ? `${next.dose} · ${next.notes || next.frequency}` : 'أضف دواء للبدء';
+      $('#nextTime').textContent = next ? formatTime(next.time) : '—';
+      $('#takeNext').disabled = !next || next.status === 'taken';
+      $('#takeNext').dataset.medId = next ? next.id : '';
+      $('#takeNext').textContent = next && next.status === 'taken' ? '✓ تم تسجيل الجرعة' : '✓ أخدت الدواء';
+      $('#homeMiniDoses').innerHTML = [...state.medicines].sort((a,b)=>a.time.localeCompare(b.time)).map(m => `<div class="mini-dose"><strong>${formatTime(m.time)} · ${m.name}</strong><small>${m.status === 'taken' ? 'تم التسجيل ✓' : m.status === 'missed' ? 'جرعة فائتة' : 'بانتظار التأكيد'}</small></div>`).join('');
+    }
+    function interactionRisk(name) { return /وارفارين|أسبرين|إيبوبروفين|ديكلوفيناك/i.test(name); }
+    function renderMeds(query = '') {
+      const list = state.medicines.filter(m => m.name.includes(query.trim()));
+      const container = $('#medList');
+      if (!list.length) { container.innerHTML = '<div class="card empty">لا توجد أدوية مطابقة. أضف دواءً جديدًا لتبدأ.</div>'; return; }
+      container.innerHTML = list.map(m => `<article class="card med-card"><div class="med-head"><div><h3>${m.name}</h3><p class="dose">${m.dose} · ${m.notes || 'حسب وصف الطبيب'}</p><span class="med-tag">${m.prescription ? 'من روشتة محفوظة' : 'إدخال يدوي'}</span></div><div class="pill-symbol">◒</div></div><div class="med-meta"><div>التكرار<strong>${m.frequency}</strong></div><div>الموعد<strong>${formatTime(m.time)}</strong></div><div>المدة<strong>${m.duration}</strong></div></div><div class="med-actions"><button class="btn btn-light btn-small" data-edit-med="${m.id}">تعديل</button><button class="btn btn-danger btn-small" data-delete-med="${m.id}">حذف</button></div></article>`).join('');
+      $('#interactionNote').classList.toggle('show', state.medicines.some(m => interactionRisk(m.name)) && state.medicines.length > 1);
+      $$('[data-edit-med]').forEach(btn => btn.addEventListener('click', () => editMedication(Number(btn.dataset.editMed))));
+      $$('[data-delete-med]').forEach(btn => btn.addEventListener('click', () => deleteMedication(Number(btn.dataset.deleteMed))));
+    }
+    function renderTimeline() {
+      $('#timeline').innerHTML = [...state.medicines].sort((a,b)=>a.time.localeCompare(b.time)).map(m => `<div class="timeline-row ${m.status === 'taken' ? 'taken' : m.status === 'missed' ? 'missed' : ''}"><div class="timeline-time">${formatTime(m.time)}</div><div class="timeline-dot"></div><div class="timeline-content"><div><b>${m.name} · ${m.dose}</b><span>${m.notes || m.frequency}${m.status === 'missed' && m.missedReason ? ' · السبب: ' + m.missedReason : ''}</span></div>${m.status !== 'taken' ? `<button class="action-round" title="تسجيل الجرعة" data-take="${m.id}">✓</button>` : ''}${m.status === 'pending' ? `<button class="action-round miss" title="تسجيل الفوات" data-miss="${m.id}">×</button>` : ''}</div></div>`).join('');
+      $$('[data-take]').forEach(btn => btn.addEventListener('click', () => markTaken(Number(btn.dataset.take))));
+      $$('[data-miss]').forEach(btn => btn.addEventListener('click', () => { state.missedTarget = Number(btn.dataset.miss); state.missedReason = ''; $$('.reason-option').forEach(x => x.classList.remove('selected')); openModal('missModal'); }));
+    }
+    const chartValues = { week: [100, 75, 100, 50, 100, 75, 75], month: [85, 80, 90, 75, 95, 70, 88, 92, 78, 100, 85, 82] };
+    function renderChart() {
+      const data = chartValues[state.chartMode];
+      $('#adherenceChart').innerHTML = data.map((value, index) => `<div class="bar-set" title="${value}%"><div class="bar" style="height:${value}%"></div><small>${state.chartMode === 'week' ? ['س','ح','ن','ث','ر','خ','ج'][index] : index + 1}</small></div>`).join('');
+      const avg = Math.round(data.reduce((a,b)=>a+b,0)/data.length); $('#avgAdherence').textContent = avg + '%';
+      const misses = state.medicines.filter(m=>m.status === 'missed').length + 2; $('#missedTotal').textContent = misses;
+      $('#completedDays').textContent = state.chartMode === 'week' ? '5 / 7' : '22 / 30';
+    }
+    function renderStockAlert() {
+      const card = $('#stockCard'); if (!card) return;
+      const lowStock = state.medicines.filter(m => Number(m.remaining) > 0 && Number(m.remaining) <= 5).sort((a,b) => Number(a.remaining) - Number(b.remaining))[0];
+      card.hidden = !lowStock;
+      if (lowStock) { $('#stockTitle').textContent = `${lowStock.name} أوشك على النفاد`; $('#stockDetail').textContent = `متبقٍ تقريبًا ${lowStock.remaining} جرعات حسب ما سجلته في التطبيق.`; }
+    }
+    function renderAll() { saveMedicines(); renderHome(); renderMeds($('#medSearch').value); renderTimeline(); renderChart(); renderStockAlert(); }
+
+    function markTaken(id) {
+      const med = state.medicines.find(m => m.id === id); if (!med) return;
+      med.status = 'taken'; renderAll();
+      showToast(`تمام، تم تسجيل جرعة ${med.name} الساعة ${formatTime(med.time)}.`);
+      speak(`تمام، اتسجلت جرعة ${med.name} الساعة ${formatTime(med.time)}`);
+    }
+    $('#takeNext').addEventListener('click', () => markTaken(Number($('#takeNext').dataset.medId)));
+    $('#medSearch').addEventListener('input', e => renderMeds(e.target.value));
+    $('#showAllMeds').addEventListener('click', () => { $('#medSearch').value = ''; renderMeds(); });
+
+    function openMedicationForm(med = null) {
+      $('#medModalTitle').textContent = med ? 'تعديل الدواء' : 'إضافة دواء';
+      $('#medId').value = med ? med.id : '';
+      $('#medName').value = med ? med.name : '';
+      $('#medDose').value = med ? med.dose : '';
+      $('#medFrequency').value = med ? med.frequency : 'مرة يوميًا';
+      $('#medTime').value = med ? med.time : '08:00';
+      $('#medDuration').value = med ? med.duration : '30 يومًا';
+      $('#medRemaining').value = med ? med.remaining : 30;
+      $('#medNotes').value = med ? med.notes : '';
+      $('#formInteraction').classList.remove('show');
+      openModal('medModal');
+    }
+    function editMedication(id) { openMedicationForm(state.medicines.find(m => m.id === id)); }
+    function deleteMedication(id) {
+      const med = state.medicines.find(m => m.id === id); if (!med) return;
+      if (!confirm(`هل تريد حذف ${med.name} من القائمة؟`)) return;
+      state.medicines = state.medicines.filter(m => m.id !== id); renderAll(); showToast('تم حذف الدواء من القائمة.');
+    }
+    $$('[data-open-med]').forEach(btn => btn.addEventListener('click', () => openMedicationForm()));
+    $('#medName').addEventListener('input', e => {
+      const message = interactionRisk(e.target.value) && state.medicines.length ? '<span>⚠</span><div><strong>تنبيه للمراجعة</strong><br>قد يحتاج هذا الدواء إلى مراجعة مع الأدوية المسجلة. لا يعني ذلك وجود تعارض مؤكد.</div>' : '';
+      $('#formInteraction').innerHTML = message; $('#formInteraction').classList.toggle('show', !!message);
+    });
+    $('#medForm').addEventListener('submit', e => {
+      e.preventDefault(); const id = Number($('#medId').value);
+      const data = { name: $('#medName').value.trim(), dose: $('#medDose').value.trim(), frequency: $('#medFrequency').value, time: $('#medTime').value, duration: $('#medDuration').value.trim() || 'غير محددة', remaining: Number($('#medRemaining').value), notes: $('#medNotes').value.trim() };
+      if (id) { Object.assign(state.medicines.find(m=>m.id===id), data); showToast('تم تحديث بيانات الدواء.'); }
+      else { state.medicines.push({ id: Date.now(), ...data, status: 'pending', prescription: false }); showToast('تمت إضافة الدواء إلى جدولك.'); }
+      closeModal('medModal'); renderAll();
+    });
+
+    function showScanResults() {
+      const suggested = [{name:'أتورفاستاتين', dose:'20 مجم', time:'20:00', confidence:'مسودة'}, {name:'فيتامين د', dose:'1000 وحدة', time:'08:00', confidence:'مسودة'}];
+      $('#scanResults').innerHTML = `<h3 class="section-label">راجع المسودة قبل الإضافة</h3><p class="scan-intro">هذه نتيجة تجريبية مستخرجة للمراجعة اليدوية. صحح أي اسم أو جرعة قبل الحفظ.</p>${suggested.map((m,i)=>`<label class="extracted-item"><input type="checkbox" checked data-scan-index="${i}"><div><b>${m.name}</b><span>${m.dose} · مقترح ${formatTime(m.time)}</span></div><em class="confidence">${m.confidence}</em></label>`).join('')}<div class="modal-actions"><button class="btn btn-primary" id="saveScanned">إضافة المحدد إلى أدويتي</button><button class="btn btn-outline" id="clearScan">إلغاء</button></div>`;
+      $('#saveScanned').addEventListener('click', () => {
+        const chosen = $$('[data-scan-index]').filter(x=>x.checked).map(x=>suggested[Number(x.dataset.scanIndex)]);
+        if (!chosen.length) return showToast('اختر دواءً واحدًا على الأقل للمراجعة.');
+        chosen.forEach(m => state.medicines.push({id:Date.now()+Math.random(), name:m.name, dose:m.dose, frequency:'مرة يوميًا', time:m.time, duration:'حسب الوصفة', remaining:30, notes:'أضيف من روشتة — راجع البيانات', status:'pending', prescription:true }));
+        renderAll(); showToast(`تمت إضافة ${chosen.length} دواء للمراجعة في جدولك.`); setScreen('medications');
+      });
+      $('#clearScan').addEventListener('click', resetScan);
+    }
+    function resetScan() { state.prescriptionImage = null; $('#filePreview').innerHTML = ''; $('#scanResults').innerHTML = '<h3 class="section-label">النتائج المستخرجة</h3><p class="scan-intro">سيظهر هنا اقتراح للأدوية والجرعات بعد رفع صورة. هذه واجهة تجريبية: يتم إظهار النتائج كمسودة قابلة للمراجعة، ولا تُضاف إلى أدويتك إلا بعد موافقتك.</p>'; }
+    function handleFile(file) {
+      if (!file || !file.type.startsWith('image/')) { showToast('يرجى اختيار صورة للروشتة.'); return; }
+      const reader = new FileReader(); reader.onload = e => { state.prescriptionImage = e.target.result; $('#filePreview').innerHTML = `<div class="file-row"><img src="${state.prescriptionImage}" alt="صورة الروشتة" /><div><b>${file.name}</b><span>تم ربط الأصل بالنتائج للمراجعة لاحقًا</span></div><button class="btn btn-danger btn-small" id="removeRx">حذف</button></div>`; $('#removeRx').addEventListener('click', resetScan); $('#scanResults').innerHTML = '<h3 class="section-label">جارٍ تحضير المسودة…</h3><p class="scan-intro">نستخرج الأسماء والجرعات، ثم ستراجعها قبل الإضافة.</p>'; setTimeout(showScanResults, 850); }; reader.readAsDataURL(file);
+    }
+    $('#chooseFile').addEventListener('click', () => $('#rxInput').click()); $('#takePhoto').addEventListener('click', () => $('#cameraInput').click());
+    $('#rxInput').addEventListener('change', e => handleFile(e.target.files[0])); $('#cameraInput').addEventListener('change', e => handleFile(e.target.files[0]));
+    ['dragenter','dragover'].forEach(type => $('#uploadZone').addEventListener(type, e => {e.preventDefault(); $('#uploadZone').classList.add('drag');}));
+    ['dragleave','drop'].forEach(type => $('#uploadZone').addEventListener(type, e => {e.preventDefault(); $('#uploadZone').classList.remove('drag');}));
+    $('#uploadZone').addEventListener('drop', e => handleFile(e.dataTransfer.files[0]));
+
+    $$('.segmented button').forEach(btn => btn.addEventListener('click', () => { state.chartMode = btn.dataset.chart; $$('.segmented button').forEach(x=>x.classList.toggle('active', x === btn)); renderChart(); }));
+    $$('.reason-option').forEach(btn => btn.addEventListener('click', () => { state.missedReason = btn.textContent; $$('.reason-option').forEach(x=>x.classList.toggle('selected', x === btn)); }));
+    $('#confirmMiss').addEventListener('click', () => { if (!state.missedReason) return showToast('اختر سبب الفوات أولًا.'); const med = state.medicines.find(m=>m.id===state.missedTarget); if (!med) return; med.status='missed'; med.missedReason=state.missedReason; closeModal('missModal'); renderAll(); showToast(`تم تسجيل جرعة ${med.name} كفائتة.`); });
+
+    const voicePreferenceKey = 'aiMedGuideVoicePreference';
+    const voiceProfiles = { female: { label: 'صوت سيدة', pitch: 1.8, rate: 1.04, tones: [1046, 1318], hints: /hoda|zira|female|woman|sara|salma|mona|dalia/i }, male: { label: 'صوت رجل', pitch: .4, rate: .78, tones: [392, 523], hints: /naayf|maged|male|man|omar|ahmed|moaz/i }, calm: { label: 'صوت هادئ', pitch: 1, rate: .82, tones: [523, 659], hints: null } };
+    let voicePreference = (() => { try { return { preset: 'calm', voiceName: '', ...JSON.parse(localStorage.getItem(voicePreferenceKey) || '{}') }; } catch (_) { return { preset: 'calm', voiceName: '' }; } })();
+    const availableArabicVoices = () => ('speechSynthesis' in window ? speechSynthesis.getVoices().filter(voice => /^ar([-_]|$)/i.test(voice.lang)) : []);
+    function selectedSpeechVoice() { const voices = availableArabicVoices(); if (voicePreference.voiceName) { const exact = voices.find(voice => voice.name === voicePreference.voiceName); if (exact) return exact; } const profile = voiceProfiles[voicePreference.preset] || voiceProfiles.calm; return profile.hints ? voices.find(voice => profile.hints.test(voice.name)) : undefined; }
+    function saveVoicePreference() { localStorage.setItem(voicePreferenceKey, JSON.stringify(voicePreference)); }
+    function speak(text) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const profile = voiceProfiles[voicePreference.preset] || voiceProfiles.calm; const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'ar-EG'; utterance.pitch = profile.pitch; utterance.rate = profile.rate; const voice = selectedSpeechVoice(); if (voice) { utterance.voice = voice; utterance.lang = voice.lang; } window.speechSynthesis.speak(utterance); }
+    let activeReminderId = null;
+    const reminderStorageKey = 'aiMedGuideReminderLog';
+    const localDayKey = () => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`; };
+    const reminderLog = () => { try { return JSON.parse(localStorage.getItem(reminderStorageKey) || '{}'); } catch (_) { return {}; } };
+    const saveReminderLog = log => localStorage.setItem(reminderStorageKey, JSON.stringify(log));
+    const preferenceOn = name => $(`[data-switch="${name}"]`)?.classList.contains('on');
+    function playReminderTone() {
+      try { const Context = window.AudioContext || window.webkitAudioContext; if (!Context) return; const ctx = new Context(), tones = (voiceProfiles[voicePreference.preset] || voiceProfiles.calm).tones; tones.forEach((frequency,index) => { const oscillator = ctx.createOscillator(), gain = ctx.createGain(), start = ctx.currentTime + index * .22; oscillator.frequency.value = frequency; oscillator.type = index === 0 ? 'sine' : 'triangle'; gain.gain.setValueAtTime(.001,start); gain.gain.exponentialRampToValueAtTime(.11,start+.03); gain.gain.exponentialRampToValueAtTime(.001,start+.2); oscillator.connect(gain).connect(ctx.destination); oscillator.start(start); oscillator.stop(start+.22); }); setTimeout(() => ctx.close(), 900); } catch (_) { /* يتاح التنبيه النصي حتى لو منع المتصفح الصوت التلقائي */ }
+    }
+    function hideReminder() { $('#doseReminder').classList.remove('show'); activeReminderId = null; }
+    function triggerReminder(medicine, key) {
+      const log = reminderLog(); if (log[key]) return; log[key] = Date.now(); saveReminderLog(log);
+      activeReminderId = medicine.id;
+      $('#reminderTitle').textContent = `حان موعد ${medicine.name}`;
+      $('#reminderDetail').textContent = `${medicine.dose} · ${formatTime(medicine.time)}`;
+      $('#doseReminder').classList.add('show');
+      if (preferenceOn('sound')) { playReminderTone(); speak(`تذكير: حان موعد ${medicine.name}. الجرعة ${medicine.dose}`); }
+      if (preferenceOn('notification') && 'Notification' in window && Notification.permission === 'granted') new Notification('AI MedGuide — موعد الدواء', { body: `${medicine.name} · ${medicine.dose} · ${formatTime(medicine.time)}` });
+    }
+    function checkMedicationSchedule() {
+      const now = new Date(), day = localDayKey();
+      state.medicines.filter(m => m.status === 'pending' && /^\d{2}:\d{2}$/.test(m.time)).forEach(medicine => {
+        const [hours, minutes] = medicine.time.split(':').map(Number);
+        const due = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+        const key = `${day}-${medicine.id}-${medicine.time}`;
+        if (now >= due && now - due < 120000) triggerReminder(medicine, key);
+      });
+    }
+    $('#reminderTaken').addEventListener('click', () => { if (activeReminderId !== null) markTaken(activeReminderId); hideReminder(); });
+    $('#reminderSnooze').addEventListener('click', () => { const medicine = state.medicines.find(m => m.id === activeReminderId); if (!medicine) return hideReminder(); hideReminder(); showToast(`سنعيد تذكيرك بـ ${medicine.name} بعد 10 دقائق.`); setTimeout(() => { if (medicine.status === 'pending') triggerReminder(medicine, `snooze-${Date.now()}-${medicine.id}`); }, 10 * 60 * 1000); });
+    checkMedicationSchedule();
+    setInterval(checkMedicationSchedule, 10000);
+    function voiceConfirm(transcript = '') { const clean = transcript.replace(/[ًٌٍَُِّْ]/g,'').trim(); if (/خدت|اخدت|اخذت|تم/.test(clean)) { const next = state.medicines.find(m=>m.status==='pending'); if(next) markTaken(next.id); else { speak('لا توجد جرعة معلقة لتسجيلها'); $('#voiceStatus').textContent='لا توجد جرعة معلقة لتسجيلها.'; } } else { const reply='لم أفهم الأمر. من فضلك قل خدت الدوا لتسجيل الجرعة.'; speak(reply); $('#voiceStatus').textContent=reply; } }
+    $('#voiceButton').addEventListener('click', () => {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!Recognition) { $('#voiceStatus').textContent='لا يدعم هذا المتصفح التعرف الصوتي. جرب Chrome أو سجّل الجرعة بالزر ✓.'; speak('يمكنك تسجيل الجرعة بالزر الموجود في الجدول'); return; }
+      const recognition = new Recognition(); recognition.lang='ar-EG'; recognition.interimResults=false; recognition.maxAlternatives=1;
+      $('#voiceButton').classList.add('listening'); $('#voiceStatus').textContent='أستمع الآن… قل: خدت الدوا';
+      recognition.onresult = e => { const spoken=e.results[0][0].transcript; $('#voiceStatus').textContent=`سمعت: «${spoken}»`; voiceConfirm(spoken); };
+      recognition.onerror = () => { const reply='لم ألتقط الأمر بوضوح. من فضلك أعد المحاولة.'; $('#voiceStatus').textContent=reply; speak(reply); };
+      recognition.onend = () => $('#voiceButton').classList.remove('listening'); recognition.start();
+    });
+    function renderVoicePicker() {
+      const anchor = $('#testVoice'); if (!anchor) return;
+      let row = $('#voiceSettingRow'); if (!row) { row = document.createElement('div'); row.className = 'setting-row'; row.id = 'voiceSettingRow'; anchor.before(row); }
+      const voices = availableArabicVoices(), activeVoice = selectedSpeechVoice();
+      const voiceStatus = activeVoice ? `الصوت العربي المستخدم: ${activeVoice.name}` : `لا يوجد صوت عربي ${voicePreference.preset==='female'?'نسائي':voicePreference.preset==='male'?'رجالي':'مخصص'} مثبت؛ سيختلف لحن التنبيه والنبرة فقط.`;
+      row.innerHTML = `<div><b>صوت التنبيه</b><span>اختَر صوت رجل أو سيدة، أو صوتًا عربيًا من جهازك.</span></div><div class="voice-picker"><div class="voice-presets">${Object.entries(voiceProfiles).map(([id,profile]) => `<button type="button" data-voice-preset="${id}" class="${voicePreference.preset===id?'active':''}">${profile.label}</button>`).join('')}</div><select id="systemVoice"><option value="">صوت الجهاز الافتراضي</option>${voices.map(voice => `<option value="${voice.name.replace(/"/g,'&quot;')}" ${voicePreference.voiceName===voice.name?'selected':''}>${voice.name} (${voice.lang})</option>`).join('')}</select><span class="hint">${voiceStatus}</span></div>`;
+      $$('[data-voice-preset]', row).forEach(button => button.addEventListener('click', () => { voicePreference.preset = button.dataset.voicePreset; voicePreference.voiceName = ''; saveVoicePreference(); renderVoicePicker(); speak(`تم اختيار ${voiceProfiles[voicePreference.preset].label} للتنبيه.`); }));
+      $('#systemVoice', row).addEventListener('change', event => { voicePreference.voiceName = event.target.value; saveVoicePreference(); if (event.target.value) speak('تم اختيار صوت الجهاز للتنبيه.'); });
+    }
+    renderVoicePicker();
+    if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = renderVoicePicker;
+    $('#testVoice').addEventListener('click', () => { const next = state.medicines.find(m=>m.status==='pending') || state.medicines[0]; if (!next) return showToast('أضف دواءً أولًا لتجربة التنبيه الصوتي.'); const text=`تذكير: حان موعد ${next.name}، جرعة ${next.dose}`; playReminderTone(); speak(text); showToast('تم تشغيل تجربة التنبيه الصوتي.'); });
+    $('#exportReport').addEventListener('click', () => { const {total,taken,percent}=progress(); $('#printReport').innerHTML=`<h1>AI MedGuide — تقرير الالتزام</h1><p>المستخدم: محمود أحمد · تاريخ التقرير: ${new Date().toLocaleDateString('ar-EG')}</p><h2>ملخص الالتزام: ${percent}% (${taken} من ${total})</h2><table><thead><tr><th>الدواء</th><th>الجرعة</th><th>الموعد</th><th>الحالة</th></tr></thead><tbody>${state.medicines.map(m=>`<tr><td>${m.name}</td><td>${m.dose}</td><td>${formatTime(m.time)}</td><td>${m.status==='taken'?'تم التسجيل':m.status==='missed'?'فائتة':'بانتظار التأكيد'}</td></tr>`).join('')}</tbody></table><p style="margin-top:25px">هذا التقرير مُنشأ للمساعدة في المتابعة، وليس تشخيصًا أو بديلًا عن الطبيب.</p>`; window.print(); });
+
+    const doctors = [{name:'د. منى شريف', specialty:'باطنة وسكر وغدد صماء', time:'اليوم · 07:00 م', icon:'👩‍⚕️'}, {name:'د. كريم عادل', specialty:'قلب وأوعية دموية', time:'غدًا · 06:00 م', icon:'👨‍⚕️'}, {name:'د. سارة حسام', specialty:'طب أسرة', time:'غدًا · 08:00 م', icon:'👩‍⚕️'}];
+    function renderDoctors() { $('#doctorGrid').innerHTML = doctors.map((d,i)=>`<article class="card doctor-card"><div class="doctor-head"><div class="doctor-avatar">${d.icon}</div><div><h3>${d.name}</h3><p>${d.specialty}</p></div></div><div class="doctor-info"><span>★ 4.8</span><span>${d.time}</span></div><button class="btn btn-primary btn-small" data-book-doctor="${i}">حجز موعد</button></article>`).join(''); $$('.doctor-card [data-book-doctor]').forEach(btn=>btn.addEventListener('click',()=>openBooking(doctors[Number(btn.dataset.bookDoctor)].name))); }
+    function openBooking(doctor) { state.selectedDoctor=doctor; $('#bookingSub').textContent=`طلب حجز مع ${doctor}. لا يتم الدفع أو الحجز الفعلي في هذا النموذج التجريبي.`; $('#bookDate').min=new Date().toISOString().slice(0,10); openModal('bookingModal'); }
+    $$('[data-plan]').forEach(btn => btn.addEventListener('click', () => { state.selectedPlan=btn.dataset.plan; showToast(`تم اختيار خطة ${state.selectedPlan}. اختر طبيبًا وموعدًا لإكمال الطلب.`); document.querySelector('#doctors .doctor-grid').scrollIntoView({behavior:'smooth', block:'center'}); }));
+    $('#bookingForm').addEventListener('submit', e => { e.preventDefault(); const consent=$('#shareData').checked ? 'مع مشاركة البيانات التي وافقت عليها' : 'من دون مشاركة بيانات صحية'; closeModal('bookingModal'); showToast(`تم إرسال طلب الحجز مع ${state.selectedDoctor} ${consent}.`); });
+
+    $$('.settings-tab').forEach(btn => btn.addEventListener('click', () => { $$('.settings-tab').forEach(x=>x.classList.toggle('active', x===btn)); $$('.settings-panel').forEach(x=>x.classList.toggle('active', x.id===btn.dataset.setting)); }));
+    $$('.switch').forEach(btn=>btn.addEventListener('click',()=>btn.classList.toggle('on')));
+    const notificationSwitch = $('[data-switch="notification"]');
+    if (!('Notification' in window) || Notification.permission !== 'granted') notificationSwitch?.classList.remove('on');
+    notificationSwitch?.addEventListener('click', async () => {
+      if (!notificationSwitch.classList.contains('on')) return;
+      if (!('Notification' in window)) { notificationSwitch.classList.remove('on'); showToast('إشعارات الجهاز غير مدعومة في هذا المتصفح.'); return; }
+      const permission = Notification.permission === 'default' ? await Notification.requestPermission() : Notification.permission;
+      if (permission !== 'granted') { notificationSwitch.classList.remove('on'); showToast('لم يتم السماح بإشعارات الجهاز. سيستمر التنبيه داخل التطبيق.'); }
+      else showToast('تم تفعيل إشعارات الجهاز لمواعيد الدواء.');
+    });
+    const logoutButton = $$('.btn.btn-danger').find(button => button.textContent.includes('تسجيل الخروج'));
+    if (logoutButton) logoutButton.addEventListener('click', () => {
+      localStorage.removeItem('aiMedGuideSession');
+      location.replace('ai-medguide-auth.html');
+    });
+    $('#inviteCaregiver').addEventListener('click',()=>openModal('careModal'));
+    $('#careForm').addEventListener('submit',e=>{e.preventDefault(); const n=$('#careName').value.trim(); $('#caregiverName').textContent=n; $('#caregiverDetail').textContent='تم إرسال دعوة متابعة إلى ' + $('#careContact').value.trim(); closeModal('careModal'); showToast('تم إرسال دعوة المتابع.'); e.target.reset(); });
+    $('#editHealth').addEventListener('click',()=>showToast('تعديل الملف الصحي متاح في الإصدار المتصل بحسابك.'));
+    $$('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeModal(btn.dataset.close)));
+    $$('.modal-wrap').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)closeModal(el.id)}));
+    document.addEventListener('keydown', e=>{if(e.key==='Escape')$$('.modal-wrap.show').forEach(el=>closeModal(el.id));});
+    function applyRegisteredProfile() {
+      try {
+        const profile = JSON.parse(localStorage.getItem('aiMedGuideProfile') || 'null');
+        if (!profile) return;
+        const fullName = String(profile.fullName || 'المستخدم').trim();
+        const firstName = fullName.split(/\s+/)[0] || 'المستخدم';
+        $('#greetingName').textContent = `أهلًا، ${firstName}`;
+        $('#homeGreeting').textContent = `صباح الخير يا ${firstName}`;
+        $('#healthChronic').textContent = profile.chronic?.length ? profile.chronic.join('، ') : 'لا توجد حالات مسجلة';
+        $('#healthAllergies').textContent = profile.allergies || 'لا توجد حساسية مسجلة';
+        $('#healthSurgeries').textContent = profile.surgeries || 'غير مسجل';
+        $('#healthBlood').textContent = profile.bloodType || 'غير مسجل';
+        const accountDetails = $$('#account .setting-row span');
+        if (accountDetails[0]) accountDetails[0].textContent = fullName;
+        if (accountDetails[1]) accountDetails[1].textContent = profile.phone || 'غير مسجل';
+        const savedMedicines = localStorage.getItem(medicineStorageKey) === null ? null : readSavedMedicines();
+        state.medicines = savedMedicines || [];
+        (savedMedicines === null ? (profile.currentMedicines || []) : []).forEach((medicine, index) => {
+          if (!medicine.name || state.medicines.some(m => m.name === medicine.name && m.dose === medicine.dose)) return;
+          state.medicines.push({
+            id: `registered-${index}`, name: medicine.name, dose: medicine.dose || 'حسب الوصفة',
+            frequency: 'حسب الوصفة', time: '08:00', duration: 'غير محددة', remaining: 0,
+            notes: 'مضاف أثناء إنشاء الحساب — راجع الموعد', status: 'pending', prescription: false
+          });
+        });
+      } catch (_) { /* يبقى العرض التجريبي متاحًا إذا لم تكن بيانات التخزين صالحة */ }
+    }
+    applyRegisteredProfile();
+    renderDoctors(); renderAll();
+  </script>
+</body>
+</html>
