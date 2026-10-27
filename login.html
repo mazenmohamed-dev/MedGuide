@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- إعدادات تطبيق الويب التقدمي (PWA) لـ PWABuilder ومتاجر التطبيقات -->
+  <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#176b5b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MedGuide" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
   <title>MedGuide | الدخول وإنشاء حساب</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -104,6 +113,20 @@
     };
     initAuthMode();
     window.addEventListener('hashchange', initAuthMode);
+  </script>
+  <!-- تسجيل Service Worker لتمكين PWA والعمل بدون اتصال بالإنترنت -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .then(reg => {
+            console.log('[MedGuide PWA] Service Worker registered successfully:', reg.scope);
+          })
+          .catch(err => {
+            console.warn('[MedGuide PWA] Service Worker registration failed:', err);
+          });
+      });
+    }
   </script>
 </body>
 </html>
