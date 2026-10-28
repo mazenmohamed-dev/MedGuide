@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <!-- إعدادات تطبيق الويب التقدمي (PWA) لـ PWABuilder ومتاجر التطبيقات -->
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#176b5b" />
@@ -18,6 +18,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    /* تحسين تجربة التطبيق الأصلي (Native Mobile App Feel) */
+    html, body {
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      touch-action: manipulation;
+      overscroll-behavior-y: none;
+    }
+    input, textarea, select, [contenteditable="true"] {
+      -webkit-user-select: auto !important;
+      user-select: auto !important;
+    }
+
     :root{--forest:#176b5b;--deep:#0d4a40;--pale:#e7f4ef;--cream:#f7f2e9;--paper:#fffdfa;--ink:#1d2d2a;--muted:#6c7b77;--line:#e6ddd0;--gold:#d9922e;--goldPale:#fff4dc;--danger:#b65143;--shadow:0 18px 48px rgba(38,73,63,.12)}
     *{box-sizing:border-box} body{margin:0;min-height:100vh;background:radial-gradient(circle at 86% 8%,#deeee7 0,transparent 27%),var(--cream);font-family:Cairo,Tahoma,sans-serif;color:var(--ink)}
     button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(217,146,46,.45);outline-offset:2px}

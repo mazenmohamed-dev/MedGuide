@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+  "name": "MedGuide | متابعة الأدوية والصحة",
+  "short_name": "MedGuide",
+  "description": "منظومة عربية متكاملة وسهلة لمتابعة مواعيد الأدوية والجرعات اليومية، والاطمئنان على صحة كبار السن وعائلتك بضغطة زر واحدة.",
+  "id": "com.mazen.medguide",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f2e9",
+  "theme_color": "#176b5b",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": [
+    "medical",
+    "health",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "جدول الأدوية",
+      "short_name": "الأدوية",
+      "description": "الاطلاع على مواعيد الأدوية اليومية",
+      "url": "./ai-medguide.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "متابعة الأسرة",
+      "short_name": "المتابع",
+      "description": "بوابة المتابع العائلي للاطمئنان",
+      "url": "./ai-medguide-caregiver.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

@@ -1,0 +1,13 @@
+{
+  "appId": "com.mazen.medguide",
+  "appName": "MedGuide",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#f7f2e9",
+    "allowMixedContent": true
+  }
+}

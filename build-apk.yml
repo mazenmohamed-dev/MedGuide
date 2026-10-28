@@ -1,0 +1,84 @@
+name: Build Android APK (Capacitor Native)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Native Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 استرجاع كود المشروع (Checkout Code)
+        uses: actions/checkout@v4
+
+      - name: ⚙️ إعداد بيئة Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: ☕ إعداد بيئة جافا (Setup Java JDK 21)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: 📱 إعداد حزمة تطوير أندرويد (Setup Android SDK)
+        uses: android-actions/setup-android@v3
+
+      - name: 📦 تثبيت حزم Capacitor
+        run: npm install
+
+      - name: 📂 تجهيز ملفات الويب في مجلد www
+        run: npm run prepare-www
+
+      - name: 🤖 تهيئة ومزامنة مشروع أندرويد عبر Capacitor
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      - name: 🎨 تخصيص أيقونات التطبيق (App Icons)
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          const srcIcon = "icon-512.png";
+          const resDir = path.join("android", "app", "src", "main", "res");
+          if (fs.existsSync(srcIcon) && fs.existsSync(resDir)) {
+            const mipmaps = ["mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi"];
+            for (const m of mipmaps) {
+              const targetDir = path.join(resDir, m);
+              if (fs.existsSync(targetDir)) {
+                fs.copyFileSync(srcIcon, path.join(targetDir, "ic_launcher.png"));
+                fs.copyFileSync(srcIcon, path.join(targetDir, "ic_launcher_round.png"));
+              }
+            }
+            console.log("MedGuide App Icons successfully replaced!");
+          }
+          '
+
+      - name: 🔨 بناء ملف APK عبر Gradle
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: 📋 تنظيم وتسمية ملف الـ APK
+        run: |
+          mkdir -p output-apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk output-apk/MedGuide-v1.0-debug.apk
+          echo "APK Size and Details:"
+          ls -lh output-apk/MedGuide-v1.0-debug.apk
+
+      - name: 🚀 رفع ملف APK كـ Artifact جاهز للتحميل
+        uses: actions/upload-artifact@v4
+        with:
+          name: MedGuide-Real-App-APK
+          path: output-apk/MedGuide-v1.0-debug.apk
+          retention-days: 30

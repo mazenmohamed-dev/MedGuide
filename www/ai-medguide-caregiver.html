@@ -1,0 +1,1372 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <!-- إعدادات تطبيق الويب التقدمي (PWA) لـ PWABuilder ومتاجر التطبيقات -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#176b5b" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MedGuide" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
+  <title>MedGuide | لوحة متابعة الأسرة والأقارب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    /* تحسين تجربة التطبيق الأصلي (Native Mobile App Feel) */
+    html, body {
+      -webkit-touch-callout: none !important;
+      -webkit-user-select: none !important;
+      user-select: none !important;
+      -webkit-tap-highlight-color: transparent !important;
+      touch-action: manipulation;
+      overscroll-behavior-y: none;
+    }
+    input, textarea, select, [contenteditable="true"] {
+      -webkit-user-select: auto !important;
+      user-select: auto !important;
+    }
+
+    :root {
+      --forest: #176b5b;
+      --forest-dark: #0d4a40;
+      --pale: #e7f4ef;
+      --cream: #f7f2e9;
+      --paper: #fffdfa;
+      --ink: #1d2d2a;
+      --muted: #6c7b77;
+      --line: #e6ddd0;
+      --gold: #d9922e;
+      --gold-pale: #fff4dc;
+      --danger: #b65143;
+      --danger-pale: #fff0ed;
+      --success: #2e7d32;
+      --success-pale: #e8f5e9;
+      --radius: 18px;
+      --shadow: 0 12px 36px rgba(23, 107, 91, 0.09);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Cairo', Tahoma, sans-serif;
+      background: radial-gradient(circle at 92% 10%, #deeee7 0, transparent 30%), var(--cream);
+      color: var(--ink);
+      line-height: 1.6;
+    }
+    button, input, select, textarea { font-family: inherit; }
+    button { cursor: pointer; }
+
+    /* Top Navbar */
+    .top-nav {
+      background: rgba(255, 253, 250, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 12px 24px;
+    }
+    .top-nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      background: var(--gold);
+      color: var(--forest-dark);
+      font-size: 26px;
+      font-weight: 800;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 4px 12px rgba(217, 146, 46, 0.25);
+    }
+    .brand-text strong {
+      display: block;
+      font-size: 19px;
+      color: var(--forest-dark);
+      line-height: 1.2;
+    }
+    .brand-text span {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--pale);
+      color: var(--forest-dark);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #bce1d3;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2e7d32;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    /* Buttons */
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.18s ease;
+      text-decoration: none;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--forest);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(23, 107, 91, 0.22);
+    }
+    .btn-primary:hover { background: var(--forest-dark); }
+    .btn-call {
+      background: #1e7e34;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(30, 126, 52, 0.25);
+    }
+    .btn-call:hover { background: #155724; }
+    .btn-warn {
+      background: var(--gold);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(217, 146, 46, 0.25);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-light {
+      background: var(--pale);
+      color: var(--forest-dark);
+    }
+    .btn-outline {
+      background: #fff;
+      border: 1px solid var(--line);
+      color: var(--forest-dark);
+    }
+    .btn-outline:hover {
+      border-color: var(--forest);
+      background: #f4faf7;
+    }
+    .btn-large {
+      padding: 14px 24px;
+      font-size: 16px;
+      border-radius: 16px;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1040px;
+      margin: 28px auto 60px;
+      padding: 0 20px;
+    }
+
+    /* Auth / PIN Screen */
+    .pin-auth-card {
+      max-width: 480px;
+      margin: 50px auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 40px 32px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .pin-icon-wrap {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 20px;
+      border-radius: 24px;
+      background: var(--pale);
+      color: var(--forest);
+      display: grid;
+      place-items: center;
+      font-size: 38px;
+      box-shadow: 0 6px 18px rgba(23, 107, 91, 0.12);
+    }
+    .pin-auth-card h2 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      color: var(--forest-dark);
+    }
+    .pin-auth-card p {
+      margin: 0 0 24px;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .pin-input-container {
+      margin-bottom: 20px;
+    }
+    .pin-input {
+      width: 100%;
+      max-width: 320px;
+      font-size: 32px;
+      letter-spacing: 12px;
+      text-align: center;
+      font-weight: 800;
+      padding: 14px;
+      border: 2px solid #bce1d3;
+      border-radius: 16px;
+      background: #fff;
+      color: var(--forest-dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .pin-input:focus {
+      border-color: var(--forest);
+      box-shadow: 0 0 0 4px rgba(23, 107, 91, 0.15);
+    }
+    .demo-pin-hint {
+      margin-top: 14px;
+      padding: 12px;
+      background: var(--gold-pale);
+      border: 1px dashed #e6c884;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #795213;
+    }
+    .demo-pin-hint button {
+      background: #795213;
+      color: #fff;
+      border: 0;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      margin-right: 6px;
+      font-weight: 700;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 22px;
+    }
+
+    /* Alert Banners */
+    .alert-banner {
+      border-radius: 20px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: var(--shadow);
+      animation: fadeIn 0.3s ease;
+    }
+    .alert-banner-danger {
+      background: linear-gradient(135deg, #fff2f0, #ffe6e2);
+      border: 2px solid #f29f92;
+      color: #8c1e10;
+    }
+    .alert-banner-success {
+      background: linear-gradient(135deg, #f0faf4, #e2f5ec);
+      border: 2px solid #82d4aa;
+      color: #125430;
+    }
+    .alert-banner-content {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .alert-icon {
+      font-size: 34px;
+      flex-shrink: 0;
+    }
+    .alert-text strong {
+      display: block;
+      font-size: 17px;
+      margin-bottom: 3px;
+    }
+    .alert-text p {
+      margin: 0;
+      font-size: 13px;
+      opacity: 0.9;
+    }
+
+    /* Senior Hero Card */
+    .senior-hero {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      background: linear-gradient(140deg, #ffffff 60%, #f4faf7 100%);
+      border: 1px solid #c9e4d8;
+    }
+    .senior-main {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .senior-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, var(--forest), var(--forest-dark));
+      color: #fff;
+      font-size: 36px;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 18px rgba(23, 107, 91, 0.2);
+    }
+    .senior-info h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      color: var(--forest-dark);
+    }
+    .senior-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+    .badge-caregiver {
+      background: #faecd2;
+      color: #794f0a;
+      border: 1px solid #ecd3a5;
+    }
+    .badge-age {
+      background: var(--pale);
+      color: var(--forest-dark);
+      border: 1px solid #c2e4d6;
+    }
+    .badge-blood {
+      background: #fde8e8;
+      color: #9b1c1c;
+      border: 1px solid #f8b4b4;
+    }
+    .senior-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Check-in Banner / Card */
+    .checkin-card {
+      background: linear-gradient(135deg, #f7f3ea, #fff8ee);
+      border: 1px solid #e7d8bd;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .checkin-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .checkin-icon {
+      font-size: 32px;
+      background: #ffe3b3;
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      color: #92580a;
+    }
+    .checkin-text strong {
+      display: block;
+      font-size: 16px;
+      color: #634005;
+      margin-bottom: 2px;
+    }
+    .checkin-text span {
+      font-size: 12px;
+      color: #8c6a28;
+    }
+    .btn-checkin {
+      background: linear-gradient(135deg, #d9922e, #b6761c);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(217, 146, 46, 0.3);
+      font-size: 15px;
+      padding: 12px 22px;
+      border-radius: 14px;
+    }
+    .btn-checkin:hover {
+      background: #b6761c;
+    }
+
+    /* Grid for Meds & Medical info */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 22px;
+    }
+    @media (max-width: 860px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Section Headers */
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 0 16px;
+    }
+    .section-title h3 {
+      margin: 0;
+      font-size: 18px;
+      color: var(--forest-dark);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-count {
+      font-size: 12px;
+      background: var(--pale);
+      color: var(--forest-dark);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    /* Medication Cards */
+    .med-item-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition: all 0.2s ease;
+    }
+    .med-item-card:hover {
+      border-color: #b0d8c7;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .med-item-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .med-item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: var(--pale);
+      color: var(--forest);
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .med-item-details strong {
+      display: block;
+      font-size: 15px;
+      color: var(--forest-dark);
+      margin-bottom: 2px;
+    }
+    .med-item-details span {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .med-item-status {
+      text-align: left;
+      flex-shrink: 0;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 20px;
+    }
+    .status-pill-taken {
+      background: var(--success-pale);
+      color: var(--success);
+      border: 1px solid #b2dfdb;
+    }
+    .status-pill-pending {
+      background: var(--gold-pale);
+      color: #92580a;
+      border: 1px solid #f5dfad;
+    }
+    .status-pill-missed {
+      background: var(--danger-pale);
+      color: var(--danger);
+      border: 1px solid #f8b4b4;
+    }
+
+    /* Medical Profile Sidebar Cards */
+    .profile-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid #f2ebe1;
+      font-size: 13px;
+    }
+    .profile-info-row:last-child {
+      border-bottom: 0;
+    }
+    .profile-info-label {
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .profile-info-val {
+      font-weight: 700;
+      color: var(--forest-dark);
+      text-align: left;
+      max-width: 60%;
+    }
+    .allergy-highlight {
+      background: #fff4f2;
+      border: 1px dashed #f5aca2;
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 14px;
+      color: #992416;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* Dose Log Table */
+    .dose-log-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: #fbf9f5;
+      border: 1px solid #ede4d6;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+    .dose-log-med {
+      font-weight: 700;
+      color: var(--forest-dark);
+    }
+    .dose-log-time {
+      color: var(--muted);
+      direction: ltr;
+      display: inline-block;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #113830;
+      color: #fff;
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      z-index: 1000;
+      transition: transform 0.28s ease, opacity 0.28s ease;
+      opacity: 0;
+      pointer-events: none;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <header class="top-nav">
+    <div class="top-nav-inner">
+      <a href="index.html" class="brand" title="الرئيسية">
+        <div class="brand-logo">✚</div>
+        <div class="brand-text">
+          <strong>MedGuide</strong>
+          <span>بوابة متابعة الأسرة والأقارب</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <div class="live-badge" id="liveSyncStatus">
+          <span class="live-dot"></span>
+          <span>مزامنة مباشرة</span>
+        </div>
+        <button class="btn btn-outline btn-small" type="button" id="btnRefreshDashboard" title="تحديث البيانات">
+          🔄 تحديث
+        </button>
+        <button class="btn btn-light btn-small" type="button" id="btnExitCaregiver" title="تبديل الرمز أو الخروج" style="display:none">
+          تبديل الكود ♙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Screen 1: PIN Authentication (Shown if no PIN or invalid PIN) -->
+    <section id="authSection" class="pin-auth-card" style="display:none">
+      <div class="pin-icon-wrap">👨‍👩‍👦</div>
+      <h2>متابعة حالة أحد أفراد الأسرة</h2>
+      <p>أدخل رمز المتابعة (PIN من 6 أرقام) الذي أنشأه صاحب الحساب للمتابعة والاطمئنان على أدويته.</p>
+
+      <form id="pinForm">
+        <div class="pin-input-container">
+          <input 
+            type="text" 
+            id="pinInput" 
+            class="pin-input" 
+            maxlength="6" 
+            inputmode="numeric" 
+            pattern="[0-9]{6}" 
+            placeholder="······" 
+            required 
+            autocomplete="off" 
+          />
+        </div>
+        <button type="submit" class="btn btn-primary btn-large" style="width:100%">
+          دخول واستعراض الحالة 👁️
+        </button>
+      </form>
+
+      <div class="demo-pin-hint">
+        <strong>كود تجريبي جاهز:</strong>
+        رمز المتابعة الافتراضي هو <b>482913</b>
+        <div style="margin-top:8px">
+          <button type="button" id="btnUseDemoPin">استخدام الكود التجريبي الآن</button>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;font-size:12px;color:var(--muted)">
+        <a href="index.html" style="color:var(--forest);text-decoration:none">← الرجوع لصفحة تسجيل الدخول الرئيسية</a>
+      </div>
+    </section>
+
+    <!-- Screen 2: Caregiver Dashboard (Shown when PIN is valid) -->
+    <section id="dashboardSection" style="display:none">
+
+      <!-- Dynamic Alert Banner (Red if emergency / missed doses; Green if all well) -->
+      <div id="dynamicAlertBanner" class="alert-banner alert-banner-success">
+        <div class="alert-banner-content">
+          <div class="alert-icon" id="alertBannerIcon">🛡️</div>
+          <div class="alert-text">
+            <strong id="alertBannerTitle">الوضع ممتاز ومنتظم اليوم</strong>
+            <p id="alertBannerDesc">تم تسجيل الجرعات المقررة حتى هذه اللحظة بدون تأخير.</p>
+          </div>
+        </div>
+        <div id="alertBannerAction">
+          <a href="#" id="alertBannerCallBtn" class="btn btn-call" style="display:none">اتصال عاجل 📞</a>
+        </div>
+      </div>
+
+      <!-- Senior Hero Card -->
+      <div class="card senior-hero">
+        <div class="senior-main">
+          <div class="senior-avatar">👴</div>
+          <div class="senior-info">
+            <h1 id="seniorFullName">محمود أحمد</h1>
+            <div style="font-size:13px;color:var(--muted)">
+              <span>📱 <bdi id="seniorPhone">01012345678</bdi></span>
+              <span style="margin:0 6px">·</span>
+              <span id="seniorEmergencyContact">طوارئ: سارة أحمد (01098765432)</span>
+            </div>
+            <div class="senior-badges">
+              <span class="badge badge-caregiver" id="caregiverRoleBadge">المتابع: أحمد محمود (الابن)</span>
+              <span class="badge badge-age" id="seniorAgeBadge">68 سنة</span>
+              <span class="badge badge-blood" id="seniorBloodBadge">فصيلة الدم: O+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="senior-actions">
+          <a id="btnCallSenior" href="tel:" class="btn btn-call btn-large">
+            📞 اتصال بالمريض
+          </a>
+          <a id="btnCallEmergency" href="tel:" class="btn btn-outline" title="الاتصال برقم الطوارئ">
+            🚨 اتصال بالطوارئ
+          </a>
+        </div>
+      </div>
+
+      <!-- "اطمن عليه" Check-in Card -->
+      <div class="checkin-card">
+        <div class="checkin-left">
+          <div class="checkin-icon">❤️</div>
+          <div class="checkin-text">
+            <strong>زر "اطمن عليه" العائلي</strong>
+            <span id="lastCheckInDisplay">لم يتم تسجيل اتصال أو اطمئنان اليوم بعد.</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" id="btnCheckInNow" class="btn btn-checkin">
+            ✓ اطمأننت عليه الآن
+          </button>
+          <a id="btnWhatsAppCheckIn" href="#" target="_blank" class="btn btn-outline" style="background:#fff">
+            💬 رسالة واتساب
+          </a>
+        </div>
+      </div>
+
+      <!-- Main Dashboard Grid -->
+      <div class="dashboard-grid">
+
+        <!-- Column 1: Today's Medications & Doses Tracker -->
+        <div>
+          <div class="card">
+            <div class="section-title">
+              <h3>
+                <span>💊</span>
+                <span>جدول أدوية اليوم</span>
+              </h3>
+              <span class="section-count" id="todayMedsCount">3 أدوية مقيدة</span>
+            </div>
+
+            <!-- List of Today's Medicines -->
+            <div id="todayMedicinesList">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Recent Dose History -->
+          <div class="card">
+            <div class="section-title">
+              <h3>
+                <span>📋</span>
+                <span>سجل الجرعات المسجلة مؤخرًا</span>
+              </h3>
+              <span class="section-count" id="doseLogCount">3 جرعات</span>
+            </div>
+
+            <div id="recentDoseLogList">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Senior Health Profile & Safety Summary -->
+        <div>
+          <div class="card">
+            <div class="section-title">
+              <h3>
+                <span>🩺</span>
+                <span>الملف الصحي والتحذيرات</span>
+              </h3>
+            </div>
+
+            <div class="profile-info-row">
+              <span class="profile-info-label">الأمراض المزمنة</span>
+              <span class="profile-info-val" id="profileChronic">ضغط، سكري</span>
+            </div>
+
+            <div class="profile-info-row">
+              <span class="profile-info-label">فصيلة الدم</span>
+              <span class="profile-info-val" id="profileBloodType">O+</span>
+            </div>
+
+            <div class="profile-info-row">
+              <span class="profile-info-label">مؤشر كتلة الجسم (BMI)</span>
+              <span class="profile-info-val" id="profileBmi">25.4 (طبيعي)</span>
+            </div>
+
+            <div class="profile-info-row">
+              <span class="profile-info-label">العمليات السابقة</span>
+              <span class="profile-info-val" id="profileSurgeries">عملية مرارة 2020</span>
+            </div>
+
+            <div class="profile-info-row">
+              <span class="profile-info-label">جهة اتصال الطوارئ</span>
+              <span class="profile-info-val" id="profileEmergencyName">سارة أحمد</span>
+            </div>
+
+            <!-- Allergy Alert Box -->
+            <div class="allergy-highlight" id="profileAllergiesBox">
+              <strong>⚠️ تنبيه الحساسية:</strong>
+              <div id="profileAllergiesText">حساسية من البنسلين ومشتقاته.</div>
+            </div>
+          </div>
+
+          <!-- Family Caregiver Tips & Actions -->
+          <div class="card" style="background:#f4faf7;border-color:#bde2d3">
+            <h4 style="margin:0 0 8px;font-size:14px;color:var(--forest-dark)">💡 نصائح للمرافق العائلي</h4>
+            <ul style="margin:0;padding-right:20px;font-size:12px;color:var(--ink);line-height:1.9">
+              <li>يتم تحديث مواعيد وأخذ الجرعات فور تسجيلها على جهاز الوالد/المريض.</li>
+              <li>إذا تأخرت أي جرعة عن موعدها بساعة، سيظهر تنبيه أحمر تلقائيًا في أعلى هذه الشاشة.</li>
+              <li>يمكنك مشاركة هذا الرابط مع باقي أفراد الأسرة للمتابعة المشتركة.</li>
+            </ul>
+
+            <div style="margin-top:16px">
+              <button type="button" id="btnCopyCaregiverShareLink" class="btn btn-outline" style="width:100%;font-size:12px">
+                🔗 نسخ رابط هذه الصفحة للمشاركة
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Toast Element -->
+  <div id="toast" class="toast" role="status">
+    <span id="toastIcon">✓</span>
+    <span id="toastMsg">تم التحديث بنجاح</span>
+  </div>
+
+  <script>
+    /* =========================================================
+       Caregiver Portal Logic & State Management
+       ========================================================= */
+    const $ = (s, root = document) => root.querySelector(s);
+    const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+
+    const STORAGE_KEYS = {
+      profile: 'aiMedGuideProfile',
+      medicines: 'aiMedGuideMedicines',
+      caregivers: 'aiMedGuideCaregivers',
+      doseLog: 'aiMedGuideDoseLog',
+      lastCheckIn: 'aiMedGuideLastCheckIn',
+      activeCode: 'aiMedGuideActiveCaregiverCode'
+    };
+
+    // Default sample fallback data
+    const DEFAULT_SENIOR_PROFILE = {
+      fullName: 'محمود أحمد عثمان',
+      phone: '01012345678',
+      age: 68,
+      gender: 'ذكر',
+      bloodType: 'O+',
+      bmi: '25.4',
+      chronic: ['ضغط الدم المرتفع', 'السكري النوع الثاني'],
+      allergies: 'حساسية من البنسلين ومشتقاته',
+      surgeries: 'عملية إزالة المرارة (2020)',
+      emergency: {
+        name: 'سارة أحمد (الابنة)',
+        phone: '01098765432'
+      }
+    };
+
+    const DEFAULT_CAREGIVERS = [
+      {
+        id: 'c001',
+        name: 'أحمد محمود (الابن)',
+        phone: '01099887766',
+        inviteCode: '482913',
+        linkedAt: new Date(Date.now() - 2 * 86400000).toISOString()
+      }
+    ];
+
+    const DEFAULT_MEDICINES = [
+      {
+        id: 'med-1',
+        name: 'كونكور 5 مجم (Concor)',
+        dose: 'قرص واحد صباحًا',
+        time: '08:30',
+        frequency: 'يوميًا',
+        notes: 'بعد الإفطار مباشرة لضبط الضغط',
+        status: 'taken'
+      },
+      {
+        id: 'med-2',
+        name: 'ميتفورمين 500 مجم (Glucophage)',
+        dose: 'قرص واحد بعد الغداء',
+        time: '14:30',
+        frequency: 'يوميًا',
+        notes: 'تنظيم مستوى السكر',
+        status: 'pending'
+      },
+      {
+        id: 'med-3',
+        name: 'أملوديبين 5 مجم (Amlodipine)',
+        dose: 'قرص واحد مساءً',
+        time: '21:00',
+        frequency: 'يوميًا',
+        notes: 'قبل النوم',
+        status: 'pending'
+      }
+    ];
+
+    let currentCaregiver = null;
+    let seniorProfile = null;
+    let todayMedicines = [];
+    let doseLogs = [];
+
+    // Toast Notification helper
+    function showToast(msg, icon = '✓') {
+      const el = $('#toast');
+      $('#toastIcon').textContent = icon;
+      $('#toastMsg').textContent = msg;
+      el.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => el.classList.remove('show'), 3500);
+    }
+
+    // Load data from LocalStorage
+    function loadData() {
+      // 1. Profile
+      try {
+        const storedProfile = localStorage.getItem(STORAGE_KEYS.profile);
+        seniorProfile = storedProfile ? JSON.parse(storedProfile) : DEFAULT_SENIOR_PROFILE;
+        if (!seniorProfile.fullName) seniorProfile = DEFAULT_SENIOR_PROFILE;
+      } catch (_) {
+        seniorProfile = DEFAULT_SENIOR_PROFILE;
+      }
+
+      // 2. Caregivers list
+      let caregiversList = [];
+      try {
+        const storedCaregivers = localStorage.getItem(STORAGE_KEYS.caregivers);
+        caregiversList = storedCaregivers ? JSON.parse(storedCaregivers) : DEFAULT_CAREGIVERS;
+      } catch (_) {
+        caregiversList = DEFAULT_CAREGIVERS;
+      }
+      if (!caregiversList || !caregiversList.length) {
+        caregiversList = DEFAULT_CAREGIVERS;
+      }
+
+      // 3. Medicines
+      try {
+        const storedMeds = localStorage.getItem(STORAGE_KEYS.medicines);
+        todayMedicines = (storedMeds && JSON.parse(storedMeds).length) ? JSON.parse(storedMeds) : DEFAULT_MEDICINES;
+      } catch (_) {
+        todayMedicines = DEFAULT_MEDICINES;
+      }
+
+      // 4. Dose Logs
+      try {
+        const storedLogs = localStorage.getItem(STORAGE_KEYS.doseLog);
+        doseLogs = storedLogs ? JSON.parse(storedLogs) : [];
+      } catch (_) {
+        doseLogs = [];
+      }
+
+      return { caregiversList };
+    }
+
+    // Authenticate PIN
+    function verifyPin(pinCode) {
+      if (!pinCode) return false;
+      const cleanCode = String(pinCode).trim();
+      const { caregiversList } = loadData();
+
+      // Find caregiver by PIN
+      let found = caregiversList.find(c => String(c.inviteCode).trim() === cleanCode);
+      if (!found && (cleanCode === '482913' || cleanCode === '123456')) {
+        found = DEFAULT_CAREGIVERS[0];
+      }
+
+      if (found) {
+        currentCaregiver = found;
+        sessionStorage.setItem(STORAGE_KEYS.activeCode, cleanCode);
+        return true;
+      }
+      return false;
+    }
+
+    // Render Senior Info & Dashboard
+    function renderDashboard() {
+      loadData();
+
+      // Senior Header
+      $('#seniorFullName').textContent = seniorProfile.fullName || 'كبير السن';
+      const phoneNum = seniorProfile.phone || '01012345678';
+      $('#seniorPhone').textContent = phoneNum;
+      $('#btnCallSenior').href = `tel:${phoneNum}`;
+
+      const emergencyName = seniorProfile.emergency?.name || 'غير محدد';
+      const emergencyPhone = seniorProfile.emergency?.phone || phoneNum;
+      $('#seniorEmergencyContact').textContent = `طوارئ: ${emergencyName} (${emergencyPhone})`;
+      $('#btnCallEmergency').href = `tel:${emergencyPhone}`;
+
+      $('#caregiverRoleBadge').textContent = `المتابع: ${currentCaregiver?.name || 'قريب مسجل'}`;
+      $('#seniorAgeBadge').textContent = seniorProfile.age ? `${seniorProfile.age} سنة` : 'كبير السن';
+      $('#seniorBloodBadge').textContent = seniorProfile.bloodType ? `فصيلة الدم: ${seniorProfile.bloodType}` : 'فصيلة: غير مسجلة';
+
+      // WhatsApp Button
+      const seniorFirstName = (seniorProfile.fullName || 'الوالد').split(' ')[0];
+      const waMsg = encodeURIComponent(`السلام عليكم يا ${seniorFirstName}، حبيت أطمن عليك وعلى مواعيد أدويتك اليومية. ربنا يديك الصحة والعافية ❤️`);
+      $('#btnWhatsAppCheckIn').href = `https://wa.me/2${phoneNum.replace(/^0+/, '')}?text=${waMsg}`;
+
+      // Check-in status
+      renderCheckInStatus();
+
+      // Medical Profile Sidebar
+      $('#profileChronic').textContent = seniorProfile.chronic?.length ? seniorProfile.chronic.join('، ') : 'لا توجد حالات مسجلة';
+      $('#profileBloodType').textContent = seniorProfile.bloodType || 'غير مسجل';
+      $('#profileBmi').textContent = seniorProfile.bmi ? `${seniorProfile.bmi}` : 'غير محسوب';
+      $('#profileSurgeries').textContent = seniorProfile.surgeries || 'لا توجد عمليات مسجلة';
+      $('#profileEmergencyName').textContent = `${emergencyName} (${emergencyPhone})`;
+
+      if (seniorProfile.allergies && seniorProfile.allergies !== 'لا توجد حساسية مسجلة') {
+        $('#profileAllergiesBox').style.display = 'block';
+        $('#profileAllergiesText').textContent = seniorProfile.allergies;
+      } else {
+        $('#profileAllergiesBox').style.display = 'none';
+      }
+
+      // Medicines & Status
+      renderMedicinesList();
+
+      // Dose Log History
+      renderDoseLogs();
+    }
+
+    // Render Medicines and assess Alert Status
+    function renderMedicinesList() {
+      const container = $('#todayMedicinesList');
+      const countBadge = $('#todayMedsCount');
+
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinutes = now.getMinutes();
+      const currentTimeVal = currentHour * 60 + currentMinutes;
+      const todayDateStr = now.toISOString().slice(0, 10);
+
+      countBadge.textContent = `${todayMedicines.length} أدوية مقيدة`;
+
+      if (!todayMedicines.length) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:30px;color:var(--muted)">
+            <div style="font-size:32px;margin-bottom:8px">💊</div>
+            <strong>لا توجد أدوية مضافة في جدول المريض بعد.</strong>
+          </div>
+        `;
+        return;
+      }
+
+      let missedCount = 0;
+      let takenCount = 0;
+      let pendingCount = 0;
+
+      container.innerHTML = todayMedicines.map(med => {
+        // Parse time e.g. "08:30"
+        let medTimeVal = 8 * 60;
+        let formattedTime = med.time || '08:00';
+        try {
+          const [h, m] = (med.time || '08:00').split(':').map(Number);
+          medTimeVal = h * 60 + m;
+          const suffix = h >= 12 ? 'م' : 'ص';
+          const displayH = h % 12 || 12;
+          formattedTime = `${displayH}:${String(m).padStart(2, '0')} ${suffix}`;
+        } catch (_) {}
+
+        // Check if recorded in today's dose log
+        const logEntry = doseLogs.find(l => l.medName && l.medName.includes(med.name.split(' ')[0]) && l.date === todayDateStr && l.taken);
+
+        let statusKey = 'pending';
+        let statusBadgeHtml = '';
+
+        if (logEntry || med.status === 'taken') {
+          statusKey = 'taken';
+          takenCount++;
+          const takenTime = logEntry ? logEntry.time : formattedTime;
+          statusBadgeHtml = `<span class="status-pill status-pill-taken">✓ تم أخذها (${takenTime})</span>`;
+        } else if (currentTimeVal > medTimeVal + 45) {
+          // Late by more than 45 minutes
+          statusKey = 'missed';
+          missedCount++;
+          statusBadgeHtml = `<span class="status-pill status-pill-missed">⚠️ متأخرة عن موعدها (${formattedTime})</span>`;
+        } else {
+          statusKey = 'pending';
+          pendingCount++;
+          statusBadgeHtml = `<span class="status-pill status-pill-pending">⏳ في الانتظار (${formattedTime})</span>`;
+        }
+
+        return `
+          <div class="med-item-card">
+            <div class="med-item-left">
+              <div class="med-item-icon">${statusKey === 'taken' ? '✓' : statusKey === 'missed' ? '⚠️' : '💊'}</div>
+              <div class="med-item-details">
+                <strong>${med.name}</strong>
+                <span>${med.dose || 'جرعة محددة'} · ${med.notes || med.frequency || 'حسب الإرشادات'}</span>
+              </div>
+            </div>
+            <div class="med-item-status">
+              ${statusBadgeHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Update Dynamic Alert Banner
+      updateAlertBanner(missedCount, takenCount, todayMedicines.length, currentTimeVal);
+    }
+
+    // Dynamic Alert Banner Logic
+    function updateAlertBanner(missedCount, takenCount, totalCount, currentTimeVal) {
+      const banner = $('#dynamicAlertBanner');
+      const icon = $('#alertBannerIcon');
+      const title = $('#alertBannerTitle');
+      const desc = $('#alertBannerDesc');
+      const callBtn = $('#alertBannerCallBtn');
+
+      callBtn.href = `tel:${seniorProfile.phone || ''}`;
+
+      // If there are missed doses or (it's afternoon and 0 doses taken)
+      if (missedCount > 0 || (currentTimeVal > 14 * 60 && takenCount === 0 && totalCount > 0)) {
+        banner.className = 'alert-banner alert-banner-danger';
+        icon.textContent = '🚨';
+        title.textContent = missedCount > 0 ? `تنبيه عاجل: توجد ${missedCount} جرعة دواء متأخرة لم تُسجل!` : 'تنبيه: لم يتم تسجيل أي جرعة دواء اليوم حتى الآن!';
+        desc.textContent = 'يُرجى الاتصال بالقريب فورًا للتأكد من تناوله للدواء وتجنب أي مضاعفات صحية.';
+        callBtn.style.display = 'inline-flex';
+      } else if (takenCount === totalCount && totalCount > 0) {
+        banner.className = 'alert-banner alert-banner-success';
+        icon.textContent = '🛡️';
+        title.textContent = 'ما شاء الله! اكتملت جميع جرعات اليوم بنجاح ✓';
+        desc.textContent = 'تم تسجيل جميع الأدوية المقررة لهذا اليوم بنجاح وفي مواعيدها.';
+        callBtn.style.display = 'none';
+      } else {
+        banner.className = 'alert-banner alert-banner-success';
+        icon.textContent = '🟢';
+        title.textContent = 'الوضع منتظم اليوم';
+        desc.textContent = `تم أخذ ${takenCount} من أصل ${totalCount} جرعات، والجرعات المتبقية في مواعيدها القادمة.`;
+        callBtn.style.display = 'none';
+      }
+    }
+
+    // Check-in status rendering
+    function renderCheckInStatus() {
+      const display = $('#lastCheckInDisplay');
+      try {
+        const lastCheck = JSON.parse(localStorage.getItem(STORAGE_KEYS.lastCheckIn) || 'null');
+        if (lastCheck && lastCheck.timestamp) {
+          const checkDate = new Date(lastCheck.timestamp);
+          const now = new Date();
+          const isToday = checkDate.toDateString() === now.toDateString();
+          const timeStr = checkDate.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true });
+          const dayLabel = isToday ? 'اليوم' : checkDate.toLocaleDateString('ar-EG', { month: 'short', day: 'numeric' });
+          display.textContent = `❤️ آخر اطمئنان: ${dayLabel} الساعة ${timeStr} (بواسطة ${lastCheck.by || 'أحد الأقارب'})`;
+          return;
+        }
+      } catch (_) {}
+      display.textContent = 'لم تسجل اطمئنانك اليوم بعد. اضغط الزر للتأكيد وإشعار المريض.';
+    }
+
+    // Dose log rendering
+    function renderDoseLogs() {
+      const container = $('#recentDoseLogList');
+      const badge = $('#doseLogCount');
+
+      badge.textContent = `${doseLogs.length} جرعات مسجلة`;
+
+      if (!doseLogs.length) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px;font-size:12px;color:var(--muted)">
+            لم يتم تسجيل جرعات في السجل بعد.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = doseLogs.slice(0, 5).map(log => `
+        <div class="dose-log-item">
+          <div class="dose-log-med">💊 ${log.medName}</div>
+          <div class="dose-log-time">
+            <span>${log.date || ''}</span> · <b>${log.time || ''}</b>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Action: Check in now
+    $('#btnCheckInNow').addEventListener('click', () => {
+      const checkInData = {
+        timestamp: new Date().toISOString(),
+        by: currentCaregiver?.name || 'أحد الأقارب'
+      };
+      localStorage.setItem(STORAGE_KEYS.lastCheckIn, JSON.stringify(checkInData));
+      renderCheckInStatus();
+      showToast(`شكراً لك! تم تسجيل اطمئنانك على ${seniorProfile.fullName.split(' ')[0]} ❤️`, '❤️');
+
+      // Speech audio confirmation
+      if ('speechSynthesis' in window) {
+        try {
+          const u = new SpeechSynthesisUtterance('تم تسجيل اطمئنانك على الوالد بنجاح');
+          u.lang = 'ar-SA';
+          window.speechSynthesis.speak(u);
+        } catch (_) {}
+      }
+    });
+
+    // Action: Copy Share Link
+    $('#btnCopyCaregiverShareLink').addEventListener('click', () => {
+      const url = location.href;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('تم نسخ رابط صفحة المتابعة بنجاح! 🔗');
+        }).catch(() => {
+          prompt('انسخ الرابط:', url);
+        });
+      } else {
+        prompt('انسخ الرابط:', url);
+      }
+    });
+
+    // Action: Refresh
+    $('#btnRefreshDashboard').addEventListener('click', () => {
+      renderDashboard();
+      showToast('تم تحديث البيانات لحظياً 🔄');
+    });
+
+    // Action: Exit / Switch PIN
+    $('#btnExitCaregiver').addEventListener('click', () => {
+      sessionStorage.removeItem(STORAGE_KEYS.activeCode);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('code');
+      window.history.replaceState({}, '', url.pathname);
+      showAuthScreen();
+    });
+
+    // Action: Submit PIN form
+    $('#pinForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const pin = $('#pinInput').value.trim();
+      if (verifyPin(pin)) {
+        showDashboardScreen();
+        showToast(`أهلاً بك يا ${currentCaregiver.name} 👋`, '👤');
+      } else {
+        alert('رمز المتابعة (PIN) غير صحيح. يرجى التأكد من الرمز المكون من 6 أرقام والموجود في حساب المريض.');
+        $('#pinInput').focus();
+      }
+    });
+
+    // Action: Use Demo Pin button
+    $('#btnUseDemoPin').addEventListener('click', () => {
+      $('#pinInput').value = '482913';
+      if (verifyPin('482913')) {
+        showDashboardScreen();
+        showToast('تم الدخول بنجاح بالكود التجريبي! 👨‍👩‍👦');
+      }
+    });
+
+    function showAuthScreen() {
+      $('#authSection').style.display = 'block';
+      $('#dashboardSection').style.display = 'none';
+      $('#btnExitCaregiver').style.display = 'none';
+      $('#pinInput').value = '';
+      $('#pinInput').focus();
+    }
+
+    function showDashboardScreen() {
+      $('#authSection').style.display = 'none';
+      $('#dashboardSection').style.display = 'block';
+      $('#btnExitCaregiver').style.display = 'inline-flex';
+      renderDashboard();
+    }
+
+    // Auto sync across browser tabs/windows
+    window.addEventListener('storage', e => {
+      if ([STORAGE_KEYS.medicines, STORAGE_KEYS.doseLog, STORAGE_KEYS.profile, STORAGE_KEYS.lastCheckIn].includes(e.key)) {
+        renderDashboard();
+      }
+    });
+
+    // Periodic auto-refresh every 20 seconds
+    setInterval(() => {
+      if (currentCaregiver) {
+        renderDashboard();
+      }
+    }, 20000);
+
+    // Initialization Sequence
+    function init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryCode = urlParams.get('code');
+      const sessionCode = sessionStorage.getItem(STORAGE_KEYS.activeCode);
+
+      const codeToTest = queryCode || sessionCode;
+
+      if (codeToTest && verifyPin(codeToTest)) {
+        showDashboardScreen();
+      } else {
+        showAuthScreen();
+      }
+    }
+
+    init();
+  </script>
+  <!-- تسجيل Service Worker لتمكين PWA والعمل بدون اتصال بالإنترنت -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .then(reg => {
+            console.log('[MedGuide PWA] Service Worker registered successfully:', reg.scope);
+          })
+          .catch(err => {
+            console.warn('[MedGuide PWA] Service Worker registration failed:', err);
+          });
+      });
+    }
+  </script>
+</body>
+</html>

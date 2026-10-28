@@ -1,0 +1,16 @@
+{
+  "name": "medguide",
+  "version": "1.0.0",
+  "description": "MedGuide - تطبيق أندرويد حقيقي لمتابعة الأدوية والصحة",
+  "main": "index.html",
+  "scripts": {
+    "prepare-www": "node prepare-www.js",
+    "cap:sync": "node prepare-www.js && npx cap sync android",
+    "cap:open": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.1",
+    "@capacitor/cli": "^7.0.1",
+    "@capacitor/core": "^7.0.1"
+  }
+}
